@@ -1,0 +1,220 @@
+﻿<Window x:Class="Empire.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Empire"
+        
+        xmlns:vm ="clr-namespace:Empire.ViewModels"
+        xmlns:v ="clr-namespace:Empire.Views"
+        
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        
+        >
+
+
+    <Window.CommandBindings>
+
+        <CommandBinding Command="{x:Static local:MainWindow.DebugCmd}"
+                    Executed="DebugCommand_Executed"
+                    CanExecute="DebugCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static local:MainWindow.ProductionDialogTestCmd}"
+                    Executed="ProductionDialogTestCommand_Executed"
+                    CanExecute="ProductionDialogTestCommand_CanExecute"/>
+        <CommandBinding Command="{x:Static local:MainWindow.AsyncTestCmd}"
+                    Executed="AsyncTestCommand_Executed"     />
+
+        <CommandBinding Command="{x:Static local:MainWindow.Window2Cmd}"
+                    Executed="Window2Command_Executed"     />
+
+    </Window.CommandBindings>
+
+    <Window.Resources>
+        <local:BlockItemDataTemplateSelector x:Key="myBlockTemplateSelector" />
+
+        <DataTemplate x:Key="blockTemplate_City">
+           
+            <Viewbox>
+                <Canvas Width="14" Height="14" Background="White"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    >
+                    <Canvas.Resources>
+                        <Style TargetType="Line">
+                            <Setter Property="Stroke" Value="Black" />
+                            <Setter Property="StrokeThickness" Value="1.4" />
+                        </Style>
+                    </Canvas.Resources>
+                    <Line X1="0" Y1="2"   X2="14" Y2="2"   />
+                    <Line X1="0" Y1="8"   X2="14" Y2="8"   />
+                    <Line X1="0" Y1="12"  X2="14" Y2="12" />
+                    <Line X1="1" Y1="0"   X2="1"  Y2="14"   />
+                    <Line X1="6" Y1="0"   X2="6"  Y2="14"   />
+                    <Line X1="12" Y1="0"  X2="12" Y2="14" />
+                    <Line X1="6" Y1="12"  X2="12" Y2="2"  />
+                </Canvas>
+            </Viewbox>
+        </DataTemplate>
+
+        <DataTemplate x:Key="blockTemplate_Image">
+            <v:MapBlock />
+        </DataTemplate>
+
+
+
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:MapViewModel />
+
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+
+        </Grid.RowDefinitions>
+
+        <Menu>
+            <MenuItem Header="_File">
+                <MenuItem Header="_New..." />
+            </MenuItem>
+            <MenuItem Header="Debug" >
+                <MenuItem Header="Smaller map" 
+                    Command="{x:Static local:MainWindow.DebugCmd}"
+                          />
+                <MenuItem Header="Production dialog test"
+                          Command="{x:Static local:MainWindow.ProductionDialogTestCmd}"/>
+                <MenuItem Header="Async map focus test"
+                          Command="{x:Static local:MainWindow.AsyncTestCmd}"/>
+                <MenuItem Header="Window 2"
+                          Command="{x:Static local:MainWindow.Window2Cmd}"/>
+
+            </MenuItem>
+
+
+        </Menu>
+        <Button Grid.Row="1" Content="End turn" Click="Button_EndTurn" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Content="test" Click="Button_Click" Margin="10 1"/>
+            <Button Content="simulate modal" Click="Button_SimulateModal" Margin="10 1"/>
+            <Button Content="production test" Click="Button_Click_1" Margin="10 1" />
+
+            <Canvas Width="15" Height="15" Background="Aqua">
+                <Line X1="0" Y1="2"  X2="14" Y2="2"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="0" Y1="8"  X2="14" Y2="8"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="0" Y1="12"  X2="14" Y2="12"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="1" Y1="0"  X2="1" Y2="14"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="6" Y1="0"  X2="6" Y2="14"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="12" Y1="0"  X2="12" Y2="14"  Stroke="Black"    StrokeThickness="1" />
+                <Line X1="6" Y1="12"  X2="12" Y2="2"  Stroke="Black"    StrokeThickness="1" />
+            </Canvas>
+                    
+                    
+                    
+                    
+
+
+        </StackPanel>
+
+        <!-- <Canvas Grid.Row="0" Width="0" Height="0" Panel.ZIndex="1" -->
+        <Canvas Grid.Row="0" Panel.ZIndex="1"
+                Grid.RowSpan="4"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                >
+            <local:ProductionView 
+                x:Name="dialogProduction"
+                Visibility="Collapsed"
+                Canvas.Top="50"
+                Canvas.Left="450"
+                Width="2000"
+                Height="1000"
+                >
+
+            </local:ProductionView>
+        </Canvas>
+
+        <!--
+        <Rectangle Grid.Row="0" Grid.RowSpan="5"
+            
+            Panel.ZIndex="2"
+                   Fill="Aqua"
+                   Opacity="0.1"
+                   >
+            
+        </Rectangle>
+        -->
+
+        <ScrollViewer Grid.Row="3" 
+            VerticalScrollBarVisibility="Visible"
+            HorizontalScrollBarVisibility="Visible"
+            >
+
+            <ItemsControl ItemsSource="{Binding Path=EmpireMap}"
+                          ItemTemplateSelector="{StaticResource myBlockTemplateSelector}"    > 
+                
+
+
+                    <!--
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+
+                            
+                            <Image Source="{Binding ImageName}" 
+                                   MouseDown="Image_MouseDown"
+                                   MouseUp="Image_MouseUp"
+                                   />
+
+
+                        </StackPanel>
+
+                    </DataTemplate>
+
+                </ItemsControl.ItemTemplate>
+-->
+                
+                
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+
+                        <v:MapCanvas x:Name="allCanvas" 
+                                   Width="3000"
+                                   Height="1800"
+                                   />
+
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+            </ItemsControl>
+
+        </ScrollViewer>
+
+
+
+
+        <TextBox Grid.Row="4" 
+            
+            Height="20"
+            Background="Aqua"
+            Text="{Binding StatusText}" />
+
+
+
+        <!--   briiiiisi   
+        <Popup IsOpen="False">
+            <TextBlock Text="Important update!!" Background="White" Foreground="Black"></TextBlock>
+        </Popup>
+        -->
+
+
+
+
+    </Grid>
+</Window>
