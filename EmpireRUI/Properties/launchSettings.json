@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EmpireRUI": {
+      "commandName": "Project",
+      "commandLineArgs": "-d"
+    }
+  }
+}

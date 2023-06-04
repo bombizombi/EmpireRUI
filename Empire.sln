@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Empire", "Empire\Empire.csproj", "{4B95E34C-3DBB-4B36-9180-A005FD7DD67D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Empire", "Empire\Empire.csproj", "{4B95E34C-3DBB-4B36-9180-A005FD7DD67D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmpireRUI", "EmpireRUI\EmpireRUI.csproj", "{8B62ED1B-AB43-4E1B-A906-BFE7FA0DC8B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{4B95E34C-3DBB-4B36-9180-A005FD7DD67D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B95E34C-3DBB-4B36-9180-A005FD7DD67D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B95E34C-3DBB-4B36-9180-A005FD7DD67D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B62ED1B-AB43-4E1B-A906-BFE7FA0DC8B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B62ED1B-AB43-4E1B-A906-BFE7FA0DC8B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B62ED1B-AB43-4E1B-A906-BFE7FA0DC8B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B62ED1B-AB43-4E1B-A906-BFE7FA0DC8B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
