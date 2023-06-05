@@ -548,7 +548,7 @@ namespace Empire.Models
             {
                 for( int dx = -1; dx <= 1; dx++)
                 {
-                    if (dx == dy) continue;
+                    if (dx == dy) continue; //skip 0,0 ????
                     /*
                     MapType type = map.map[ (locX+dx)  + (locY + dy) * map.sizeX];
                     if (!army.CanStepOn(type)) return false;

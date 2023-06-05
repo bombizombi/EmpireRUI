@@ -84,3 +84,18 @@ Fog map for a player is 2d array of ?
 
 
 
+
+
+
+do 
+	-player move
+	-ai move
+
+until game over
+
+
+
+
+
+
+

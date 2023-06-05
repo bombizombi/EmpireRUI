@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,15 +16,17 @@ public class MainViewModel : ReactiveObject, IScreen
     {
         Router = new RoutingState();
 
+
         Locator.CurrentMutable.Register( () => new MainMenuView(), typeof(IViewFor<MainMenuViewModel>));
-        Debug.WriteLine("MainViewModel ctor");
+
+        //Debug.WriteLine("MainViewModel ctor");
         Router.ThrownExceptions.Subscribe(ex =>
         {
            Debug.WriteLine(ex);
         });
 
 
-        Router.Navigate.Execute(new MainMenuViewModel(this));
+        Router.NavigateAndReset.Execute(new MainMenuViewModel(this));
     }
 
 
