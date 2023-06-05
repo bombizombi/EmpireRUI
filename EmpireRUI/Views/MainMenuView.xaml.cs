@@ -27,18 +27,39 @@ public partial class MainMenuView : MainMenuViewBase
     {
         InitializeComponent();
 
+        //totally multiplicating downs 
         var mouseDowns = Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
-            h => canvas.MouseLeftButtonDown += h, h => canvas.MouseLeftButtonDown -= h);
+                            h => canvas.MouseLeftButtonDown += h, h => canvas.MouseLeftButtonDown -= h)
+            .Select(e => e.EventArgs.GetPosition(canvas));
         var mouseUps = Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
-            h => canvas.MouseLeftButtonUp += h, h => canvas.MouseLeftButtonUp -= h);
+                            h => canvas.MouseLeftButtonUp += h, h => canvas.MouseLeftButtonUp -= h)
+            .Select(e => e.EventArgs.GetPosition(canvas));
 
+
+        //this one will work fine if you drag, but drop outside of window
+        var drag = mouseDowns
+            .TakeUntil(mouseUps)
+            .CombineLatest(mouseUps
+                .Take(1), (p1, p2) => new MouseMovement { StartPoint = p1, EndPoint = p2 })
+            .Repeat();
+        drag.Subscribe(mm => Debug.WriteLine($"Start: {mm.StartPoint}, End: {mm.EndPoint}"));
+        
+
+        /*
+        //this one will duplicate all the drags that end up outside of window, and dump them all on the last mouse up
         var mouseMovement = mouseDowns
-            .Select(e => new MouseMovement { StartPoint = e.EventArgs.GetPosition(canvas) })
-            .SelectMany(startPoint =>  mouseUps
-                .Select(e => new MouseMovement { StartPoint = startPoint.StartPoint, EndPoint = e.EventArgs.GetPosition(canvas) })
+            .SelectMany(startPoint => mouseUps
+                .Take(1)
+                .Select(e => new MouseMovement { StartPoint = startPoint, EndPoint = e })
         );
-
         mouseMovement.Subscribe(mm => Debug.WriteLine($"Start: {mm.StartPoint}, End: {mm.EndPoint}"));
+        */
+
+        /*
+        var correct = mouseDowns.CombineLatest(mouseUps, (down, up) => new MouseMovement { StartPoint = down, EndPoint = up });
+        correct.Subscribe(mm => Debug.WriteLine($"Start: {mm.StartPoint}, End: {mm.EndPoint}"));
+        */
+
 
     }
 
@@ -65,17 +86,7 @@ public partial class MainMenuView : MainMenuViewBase
     {
         Debug.WriteLine($"canvas_PreviewMouseLeftButtonDown {e.GetPosition(canvas)}");
     }
-    /*    
-public IObservable<MouseMovement> CreateMouseMovementObservable()
-{
-return mouseDowns
-.Select(downEvent => new MouseMovement { StartPoint = downEvent.GetPosition(canvas) })
-.SelectMany(startPoint =>
-mouseUps
-.Select(upEvent => new MouseMovement { StartPoint = startPoint.StartPoint, EndPoint = upEvent.GetPosition(canvas) })
-);
-}
-*/
+
 
 }
 public class MouseMovement
