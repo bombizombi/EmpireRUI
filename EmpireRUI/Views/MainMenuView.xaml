@@ -8,9 +8,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              Background="LightSeaGreen"
+                        PreviewMouseLeftButtonDown="MainMenuViewBase_PreviewMouseLeftButtonDown"
                         >
-    <w:AutoGrid Rows="Auto, Auto">
+    <w:AutoGrid Rows="Auto, Auto,*">
         <Button Content="New Game" Margin="6" />
-        <Button Content="Mini map" Grid.Row="1" Margin="6"/> 
+        <Button Content="Mini map" Grid.Row="1" Margin="6"/>
+        <Canvas Grid.Row="2" x:Name="canvas" PreviewKeyDown="canvas_KeyDown" Background="Transparent" PreviewMouseLeftButtonDown="canvas_PreviewMouseLeftButtonDown" >
+        </Canvas>
     </w:AutoGrid>
 </local:MainMenuViewBase>
