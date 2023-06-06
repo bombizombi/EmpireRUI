@@ -94,6 +94,24 @@ do
 until game over
 
 
+2023-06-06
+Total reorganization to the game loop and iteractions model. It turns out that ActivateArmy method was important, and
+it was called from all over the place.  So we move it into the main loop, and only the main loop calls it.
+Also, main loop will start any interaction, and all the moves will pass trough it.  Old implementatio was calling
+ActivateUnit and CheckForEndOfTurn all over the place and this was crashing all over.  So:
+
+mail game loop:
+	-activate unit (more as a hint)
+	-start interaction
+	-send interaction result (game move?) to the game model
+	-loop while there are still units with steps left
+
+
+Here we can also check if there were turns without any requested interactions, and then stop if there was any 
+attempted interupts (any mouse clicks or key clicks while there were no interactions requested?).
+
+
+-implement playable text dumps?
 
 
 
