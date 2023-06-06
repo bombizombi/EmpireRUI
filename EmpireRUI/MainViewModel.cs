@@ -1,12 +1,12 @@
-﻿using ReactiveUI;
-using Splat;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿global using ReactiveUI;
+global using Splat;
+global using System;
+global using System.Collections.Generic;
+global using System.Diagnostics;
+global using System.Linq;
+global using System.Reflection;
+global using System.Text;
+global using System.Threading.Tasks;
 
 namespace EmpireRUI;
 
