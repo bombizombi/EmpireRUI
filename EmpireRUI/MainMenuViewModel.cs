@@ -19,6 +19,14 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
     {
         //var theGame = new EmpireTheGame(); //TODO: inject this
         //game parameters are read from this main menu?
+        string map = """
+                         ...
+                         ..o
+                         ..#
+                         """;
+
+        var empire = EmpireTheGame.FromString(map);
+        empire = new EmpireTheGame();
 
         var vm = new MapViewModel(HostScreen);
 
