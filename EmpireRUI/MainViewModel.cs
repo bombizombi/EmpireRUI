@@ -18,6 +18,7 @@ public class MainViewModel : ReactiveObject, IScreen
 
 
         Locator.CurrentMutable.Register( () => new MainMenuView(), typeof(IViewFor<MainMenuViewModel>));
+        Locator.CurrentMutable.Register(() => new MapView(), typeof(IViewFor<MapViewModel>));
 
         //Debug.WriteLine("MainViewModel ctor");
         Router.ThrownExceptions.Subscribe(ex =>

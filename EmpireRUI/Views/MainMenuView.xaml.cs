@@ -1,9 +1,11 @@
 ﻿using ReactiveUI;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +28,28 @@ public partial class MainMenuView : MainMenuViewBase
     public MainMenuView()
     {
         InitializeComponent();
+
+        this 
+            .WhenAnyValue(x => x.ViewModel)
+            .Where(x => x != null)
+            .Subscribe(x => DataContext = x);
+        this.WhenActivated(disposables =>
+        {
+//            this.Bind(ViewModel, vm => vm.UserName, v => v.Username.Text)
+  //              .DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.StartGameCommand, v => v.newGame)
+            .DisposeWith (disposables);
+           
+
+            // Dispose WhenAny bindings to ensure we won't have memory
+            // leaking here if the ViewModel outlives the View and vice 
+            // versa.
+            //this.WhenAnyValue(v => v.ViewModel.IsBusy)
+            //    .BindTo(this, v => v.ProgressRing.IsActive)
+            //    .DisposeWith(disposables);
+        });
+
+        //22
 
         //totally multiplicating downs 
         var mouseDowns = Observable.FromEventPattern<MouseButtonEventHandler, MouseButtonEventArgs>(
