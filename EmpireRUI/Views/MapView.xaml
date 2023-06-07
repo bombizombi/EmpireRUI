@@ -12,7 +12,7 @@
         <TextBox x:Name="tbMap" 
                  Grid.Row="0"
                     FontFamily="Consolas"
-                    FontSize="12"
+                    FontSize="16"
                     TextWrapping="Wrap"
                  
                  />

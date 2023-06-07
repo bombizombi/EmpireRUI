@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -24,8 +25,31 @@ public partial class MapView : MapViewBase
     public MapView()
     {
         InitializeComponent();
+
+        this
+            .WhenActivated(
+                disposables =>
+                {
+                    this
+                        .OneWayBind(this.ViewModel, vm => vm.MapString, v => v.tbMap.Text)
+                        .DisposeWith(disposables);
+                });
+
+        //22
+        this
+            .WhenActivated(
+                disposables =>
+                {
+                    _ = ViewModel?.StartMainGameLoop();
+                });
+
     }
-}
+
+
+
+} //end class MapView
+
+
 
 //workaround for XAML inabillity to inherit generic class
 public class MapViewBase : ReactiveUserControl<MapViewModel> { }

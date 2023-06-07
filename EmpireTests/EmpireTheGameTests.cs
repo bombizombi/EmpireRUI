@@ -14,7 +14,7 @@ namespace EmpireTests
             var empire = EmpireTheGame.FromString(map);
             
             Assert.Equal(3, empire.SizeX);
-            Assert.Equal(3, empire.SizeY  );
+            Assert.Equal(3, empire.SizeY);
             Assert.True(empire.Dump().Length > 0); //it prints something
             Assert.Equal(map, empire.Dump().TrimEnd());
         }
