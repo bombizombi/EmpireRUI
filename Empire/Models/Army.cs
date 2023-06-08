@@ -96,7 +96,7 @@ namespace Empire.Models
             stepsAvailable = FullSteps();
 
 
-        player = p;
+            player = p;
             name = "Army no " + Army.count;
 
         }

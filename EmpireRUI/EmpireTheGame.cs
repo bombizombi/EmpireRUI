@@ -21,6 +21,7 @@ public class EmpireTheGame
         return Map.Dump();
     }
 
+    
     public EmpireTheGame() : this(MapHolder.Default)
     {
         //Map = MapHolder.Default;
@@ -41,6 +42,24 @@ public class EmpireTheGame
         Map = new MapHolder(map);
         Players = new Player[playerCount];
     }
+
+
+    public Player AddPlayer()
+    {
+        for (int i = 0; i < Players.Length; i++)
+        {
+            if (Players[i] == null)
+            {
+                var player = new Player(this);
+                Players[i] = player;
+                return player;
+            }
+        }
+        Debug.Assert(false, "No more players can be added");
+        return null;
+
+    }
+
 
 
 }

@@ -79,7 +79,7 @@ namespace Empire.Models
                 MapType terrainMap = app.map.map[x + dx + (y + dy) * app.map.sizeX];
                 FoggyMap tileType = FoggyMapElem.ConvertFromTerrain( terrainMap);
                 //FoggyMap tileType = (int)app.map.map[x + dx + (y + dy) * app.map.sizeX];
-                // - check neutral cities, check opponent cityies
+                // - check neutral cities, check opponent cities
                 // - check opponent armies
                 if( tileType == FoggyMap.cityNeutral)
                 {

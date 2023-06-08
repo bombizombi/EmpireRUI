@@ -7,7 +7,7 @@ namespace EmpireRUI;
 public class Player
 {
     EmpireTheGame app;
-    //private List<IUnit> units;
+    private List<IUnit> units;
     //private List<City> cities;
 
     public FoggyMapElem[,] map;
@@ -17,7 +17,7 @@ public class Player
     public Player(EmpireTheGame app)
     {
         this.app = app;
-        //units = new List<IUnit>();
+        units = new List<IUnit>();
         //cities = new List<City>();
 
         map = new FoggyMapElem[app.Map.SizeX, app.Map.SizeY];
@@ -89,6 +89,15 @@ public class Player
     public IObservable<string> DumpObs { get; set; }
 
 
+    public void AddUnit(IUnit ar)
+    {
+        units.Add(ar);
+    }
+
+    public List<IUnit> GetArmies()
+    {
+        return units;
+    }
 
 
 

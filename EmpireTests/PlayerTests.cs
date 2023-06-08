@@ -1,23 +1,26 @@
-﻿namespace EmpireTests;
+﻿using System.Diagnostics;
+
+namespace EmpireTests;
 
 public class PlayerTests
 {
     public PlayerTests()
     {
         string map = """
-                         ...
+                         oo.
                          ..o
                          ..#
                          """;
 
         //var empire = EmpireTheGame.FromString(map, playerCount: 2);
         empire = new EmpireTheGame(map, playerCount: 1);
-        player = new Player(empire);
+        player = empire.AddPlayer();
+        
 
     }
-
     private EmpireTheGame empire;
     private Player player;
+
     [Fact]
     public void EmpireCanLoadTextMap()
     {
@@ -44,20 +47,30 @@ public class PlayerTests
     [Fact]
     public void PlayerCanSeeAroundArmy()
     {
+        
         string expectedFoggyMapString =
             "a. \r\n" +
             ".. \r\n" +
             "   \r\n";
-        Player.Add(new Army(0, 0));
+        player.AddUnit(new Army(0, 0, player));
+
+        Debug.WriteLine($"expected = {expectedFoggyMapString}");
 
         bool observableHappened = false;
+        string rez = "pero";
+        //Assert.True(observableHappened);
         empire.Players.First().DumpObs.Subscribe(x =>
         {
-            observableHappened = true;
-            Assert.Equal(expectedFoggyMapString, x);
+            rez = x;
+            Debug.WriteLine("Actual:"+x);
+            //observableHappened = true;           
         });
+        
         Assert.True(observableHappened);
+        Assert.Equal(expectedFoggyMapString, rez);
+        
 
+        
     }
 
 
