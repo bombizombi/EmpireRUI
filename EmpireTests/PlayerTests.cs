@@ -63,7 +63,7 @@ public class PlayerTests
         {
             rez = x;
             Debug.WriteLine("Actual:"+x);
-            //observableHappened = true;           
+            observableHappened = true;           
         });
         
         Assert.True(observableHappened);
