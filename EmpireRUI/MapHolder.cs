@@ -108,8 +108,12 @@ public class FoggyMapElem
             FoggyMap.sea => '.',
             FoggyMap.land => 'o',
             FoggyMap.city => '#',
+
+            FoggyMap.army => 'a',
+
             _ => '?'
         };
+        if (c == '?') Debug.Assert(false, "unknown foggy map type");
         return c;
     }
 }
@@ -131,7 +135,7 @@ public enum MapType : byte
 
 
 public enum FoggyMap : byte
-/* foggy armies = base type + player owner
+/* foggy armies = base type + player owner zero based
  * foggy cities = base city (10) + player owner, also 9 for neutral
  */
 {

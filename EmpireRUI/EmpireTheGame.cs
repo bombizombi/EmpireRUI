@@ -1,5 +1,22 @@
 ﻿namespace EmpireRUI;
 
+/*General class descriptions and responsibilities
+ * 
+ * EmpireTheGame: 
+ *      -will hold the static terrain map
+ *      -contains players
+ *      
+ * Player
+ *      -will hold the fog of war map 
+ *      -will hold units and cities belonging to the player
+ *      
+ *      
+ * Design decisions:
+ *      Main game loop, I put it in the MapViewModel, but maybe it belongs to the EmpireTheGame?
+ *      
+ * 
+ */
+
 public class EmpireTheGame
 {
 
@@ -51,6 +68,7 @@ public class EmpireTheGame
             if (Players[i] == null)
             {
                 var player = new Player(this);
+                player.Index = i;
                 Players[i] = player;
                 return player;
             }

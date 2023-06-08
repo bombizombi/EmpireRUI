@@ -8,7 +8,7 @@
         xmlns:w="clr-namespace:AutoGrid;assembly=AutoGrid" 
         xmlns:rxui="http://reactiveui.net"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Empire the Game" Height="450" Width="800">
     <w:AutoGrid Rows="*,Auto">
 
         <rxui:RoutedViewHost

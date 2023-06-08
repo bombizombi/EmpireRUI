@@ -27,8 +27,8 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
 
         var empire = new EmpireTheGame( mapString, playerCount: 1);
         var player = empire.AddPlayer();
-        //var player = new Player(empire);
-        //empire.Players[0] = player; //TODO: improve this
+        player.AddUnit( new Army(0, 0, player));
+
 
 
 

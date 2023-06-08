@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,9 +34,23 @@ public partial class MapView : MapViewBase
                     this
                         .OneWayBind(this.ViewModel, vm => vm.MapString, v => v.tbMap.Text)
                         .DisposeWith(disposables);
+
+                    //bind interaction
+
+                    //show async message box
+
+                    this.ViewModel
+                        ?.Confirm
+                        .RegisterHandler(async interaction =>
+                            {
+                                await ShowAsync("Game Over", interaction.Input);
+
+                                interaction.SetOutput(Unit.Default);
+                            });
+
                 });
 
-        //22
+        
         this
             .WhenActivated(
                 disposables =>
@@ -46,6 +61,12 @@ public partial class MapView : MapViewBase
     }
 
 
+
+    public static async Task ShowAsync(string message, string caption="")
+    {
+        await Task.Delay(1); // Simulate an asynchronous operation
+        MessageBox.Show(message, caption);
+    }
 
 } //end class MapView
 

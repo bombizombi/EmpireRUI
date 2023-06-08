@@ -4,6 +4,12 @@ namespace EmpireRUI;
 
 public interface IUnit 
 {
+    public int X { get;  }
+    public int Y { get;  }
+    public string Name { get; }
+    public int StepsAvailable { get; }
+    public int Hitpoints { get; }
+    public int BaseFoggyType { get; }
 
 }
 
@@ -40,6 +46,13 @@ public class Army : IUnit
     public virtual int FullHitpoints() => 1;
     public virtual int FullSteps() => 1;
 
+    public int X => x;
+    public int Y => y;
+    public string Name => name;
+    public int StepsAvailable => stepsAvailable;
+    public int Hitpoints => hitpoints;
+
+    public int BaseFoggyType => (int)FoggyMap.army;
 
 
 } //end Army
