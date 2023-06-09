@@ -107,7 +107,8 @@ public class FoggyMapElem
             FoggyMap.unknown => ' ',
             FoggyMap.sea => '.',
             FoggyMap.land => 'o',
-            FoggyMap.city => '#',
+            FoggyMap.cityNeutral => '#',
+            FoggyMap.city => '1',  //city of player 0
 
             FoggyMap.army => 'a',
 
@@ -145,7 +146,7 @@ public enum FoggyMap : byte
     land = 3,
 
     cityNeutral = 9,
-    city = 10,
+    city = 10,  //city of player 0
 
     army = 20,
     fighter = 30,

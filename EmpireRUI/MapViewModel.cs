@@ -1,6 +1,7 @@
 ﻿using Splat.ModeDetection;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Xaml;
 
 namespace EmpireRUI;
 
@@ -38,18 +39,50 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
     public async Task StartMainGameLoop()
     {
+        //this method could belong to the game model
+
+        tempCommands.Subscribe(x => {
+            Debug.WriteLine("tempCommands: " + x);
+            //empire.Players[0].GoRight());
+        });
+
+
+        int count = 0;
+
         bool gameOver = false;
         do
         {
             //check new cities
             //report production?
-
             //activate unit?
             //start interaction
             //send interaction result(game move?) to the game model
 
-            gameOver = empire.Players[0].IsDead(); 
+            var army = empire.Players[0].ActivateUnit();
+            if( army is not null)
+            {
+                Debug.WriteLine($"Activated army {army.Name}.");
 
+
+                Debug.WriteLine($"before requesting interaction {count}. ");
+                var tempMove2 = await interactionMove.Handle("");
+                Debug.WriteLine("tempCommands: " + tempMove2.ToString());
+
+                empire.GameMove(tempMove2);
+
+            }
+            else
+            {
+                Debug.WriteLine("No army activated.");
+                empire.Players[0].NewMove();
+            }
+
+
+            //await Observable.Interval(TimeSpan.FromSeconds(1)).Take(2);
+
+            gameOver = empire.Players[0].IsDead(); 
+            Debug.WriteLine("main game loop {count} - gameOver: " + gameOver);
+            count++;
         } while( !gameOver );
 
 
@@ -69,6 +102,16 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
         //HostScreen.Router.Navigate.Execute(vm);
 
 
+
+    }
+
+    public Interaction<string, GameOrder> interactionMove = new(); //property?
+    //string imput parameter is unused
+
+    private Subject<string>tempCommands = new Subject<string>();
+    internal void TempGoRight()
+    {
+        tempCommands.OnNext("GoRight");
 
     }
 

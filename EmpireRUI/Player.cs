@@ -175,8 +175,11 @@ public class Player
 
     private bool CheckActualCityOwner(int v1, int v2, out int playerIndex)
     {
-        throw new NotImplementedException();
+        playerIndex = -1;
+        return false;
     }
+
+
 
     public string Dump()
     {   
@@ -195,8 +198,9 @@ public class Player
 
     internal bool IsDead()
     {
-        //count cities and units
-        return true; //player dead
+        return !GetArmies().Any();
+        //TODO count cities and units
+        //return true; //player dead
     }
 
     public IObservable<string> DumpObs { get; set; }
@@ -211,16 +215,63 @@ public class Player
 
     }
 
-    public List<IUnit> GetArmies()
+    public IUnit? ActiveUnit;
+    //public async Task<IUnit> ActivateUnit(FeedbackTasks tasks, IUnit? ignore = null)
+    public IUnit ActivateUnit( IUnit? ignore = null)
     {
-        return units;
+        //try to find a unit that did not move yet, also process standing orders while doing that
+        //return null if there is no more armies that need attention
+
+        ActiveUnit = null;
+        //find first army still to move
+        foreach (var u in units) //this loop should be in the view?
+        {
+            //if (u.IsInSentry()) continue;
+
+            if (u.StepsAvailable > 0)
+            {
+                bool armyMoved = false;
+                /* TODO
+                //check for standing orders
+                if (u.StandingOrder != StandingOrders.None)
+                {
+                    armyMoved = await HandleStandingOrders(u, tasks);
+                }
+                */
+                if (!armyMoved && (u != ignore))
+                {
+                    ActiveUnit = u;
+                    break;
+                }
+            }
+        }
+        if (ActiveUnit == null)
+        {
+            //Debugger.Break();
+        }
+        return ActiveUnit;
+    }
+    public void NewMove()
+    {
+        foreach (var u in units)
+        {
+            u.NewTurn();
+        }
+        //foreach (var c in cities)
+        //{
+        //    c.NewTurn(this);
+        //}
     }
 
 
 
+    public List<IUnit> GetArmies()
+    {
+        return units;
+    }
+    public List<IUnit> Units => GetArmies();
 
-
-
+    //public IUnit? ActiveUnit => null; //TODO
 
 
 } //end class Player

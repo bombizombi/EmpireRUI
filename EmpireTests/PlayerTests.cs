@@ -70,7 +70,7 @@ public class PlayerTests
 
 }
 
-public class  PlayerTestsMultipleArmies
+public class PlayerTestsMultipleArmies
 {
     private EmpireTheGame empire;
     private Player player;
@@ -114,6 +114,62 @@ public class  PlayerTestsMultipleArmies
         Assert.Equal(1, count);
 
     }
+}
+
+
+public class PlayerTestsStandingOrderGivesFeedback
+{
+    private EmpireTheGame empire;
+    private Player player;
+    public PlayerTestsStandingOrderGivesFeedback()
+    {
+        string map = """
+                        oooooooooooooooooooooooo
+                        ..oooooooooooooooooooooo
+                        .......................#
+                        """;
+        empire = new EmpireTheGame(map, playerCount: 1);
+        player = empire.AddPlayer();
+    }
+
+    [Fact]
+    public void PlayersArmiesHandleStandingOrderAndFeedback()
+    {
+        var army = new Army(0, 0, player);
+        player.AddUnit(army);
+
+        //a wish
+        //army.standingOrder = StandingOrders.LongGoto;
+        //army.TargetX = 8;
+        //army.TargetY = 0;
+
+        //player .AddStandingOrder(new MoveOrder(army, 1, 0));
+
+        /*
+        string expectedFoggyMapString =
+            "aa.\r\n" +
+            "..o\r\n" +
+            "   \r\n";
+
+        bool observableHappened = false;
+        string result = "";
+        int count = 0;
+        empire.Players.First().DumpObs.Subscribe(x =>
+        {
+            count++;
+            result = x;
+            observableHappened = true;
+        });
+
+        Assert.True(observableHappened);
+        Assert.Equal(expectedFoggyMapString, result);
+        Assert.Equal(1, count);
+        */
+    }
+
+
+
+
 
 
 

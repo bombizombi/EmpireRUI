@@ -18,6 +18,7 @@ namespace Empire.Models
 
         public Task MoveTo(int x, int y, FeedbackTasks t);
 
+
         public void NewTurn();
         public StandingOrders StandingOrder { get; set; }
         public int TargetX { get; set; }
