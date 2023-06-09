@@ -114,6 +114,40 @@ public class PlayerTestsMultipleArmies
         Assert.Equal(1, count);
 
     }
+    [Fact]
+    public void ArmyCantStepIntoFriendlyArmy()
+    {
+        var army1 = new Army(0, 0, player);
+        var army2 = new Army(1, 0, player);
+        player.AddUnit(army1);
+        player.AddUnit(army2);
+
+        empire.MoveTo(1, 0, army1);
+
+
+        string expectedFoggyMapString =
+            "aa.\r\n" +
+            "..o\r\n" +
+            "   \r\n";
+
+        bool observableHappened = false;
+        string result = "";
+        int count = 0;
+        empire.Players.First().DumpObs.Subscribe(x =>
+        {
+            count++;
+            result = x;
+            observableHappened = true;
+        });
+
+        Assert.True(observableHappened);
+        Assert.Equal(expectedFoggyMapString, result);
+        Assert.Equal(1, count);
+
+    }
+
+
+
 }
 
 

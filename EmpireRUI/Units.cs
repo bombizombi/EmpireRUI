@@ -118,6 +118,7 @@ public class Army : IUnit
     public void RenderFoggy()
     {
         //might return true if something of interest was discovered
+        Debug.WriteLine("render foggy for army");
         this.player.RenderFoggyForArmy(this);
     }
     public virtual bool CanStepOn(MapType type) => type == MapType.land;
@@ -127,6 +128,14 @@ public class Army : IUnit
     protected static int count = 0;
     public virtual int FullHitpoints() => 1;
     public virtual int FullSteps() => 1;
+
+    internal void DebugCreateStandingOrder(StandingOrders order, int tx, int ty)
+    {
+        standingOrder = order;
+        targetX = tx;
+        targetY = ty;
+
+    }
 
     public int X => x;
     public int Y => y;

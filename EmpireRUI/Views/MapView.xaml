@@ -17,7 +17,7 @@
                  
                  />
         <TextBox x:Name="tbMessages"
-                    Grid.Row="1"
+                    Grid.Row="1" 
                         
                         TextWrapping="Wrap"
                     />

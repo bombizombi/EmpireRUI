@@ -103,7 +103,8 @@ public class EmpireTheGame
 
     public void DebugMoveDirection(int deltax, int deltay)
     {
-        var army = Players.First().Units.First();
+        //var army = Players.First().Units.First();
+        var army = Players.First().ActiveUnit;
         MoveTo(army.X + deltax, army.Y + deltay, army);
     }
     public void DebugLongMoveTo(int deltax, int deltay)
@@ -133,11 +134,6 @@ public class EmpireTheGame
 
     public bool MoveTo(int x, int y, IUnit? army =null)
     {
-        //can't go into water test
-        //can't go out of map test
-
-
-
         //normal move means only neighbour cells, even for units with longer range
 
         //can only move to land close by, and can't step on the edge
@@ -195,6 +191,11 @@ public class EmpireTheGame
         ////check if it can hop on it
         //var ship = ActivePlayer.FriendlyContainerAtLoc(x, y);
         //if (ship != null) return Move_HandleLoading(army, x, y, ship);
+
+        //check if target loc is already occupied
+        var friend = ActivePlayer.FriendlyUnitAtLoc(x, y);
+        if (friend != null) return false; //here we can make some push for room logic?
+
 
 
         //check if it can bombard it
@@ -379,7 +380,7 @@ public class EmpireTheGame
     {
 
         //await tasks.Add(army, Tasks.DelayBeforeMove);
-        Debugger.Break(); //see how we are going to create this delay
+        //Debugger.Break(); //see how we are going to create this delay
 
         do
         {
@@ -417,7 +418,7 @@ public class EmpireTheGame
 
 
             //await tasks.Add(army, Tasks.DelayInbetweenSteps, locs);
-            Debugger.Break(); //see how we are going to create this delay
+            //Debugger.Break(); //see how we are going to create this delay
 
             //target reached?
             if ((army.X == army.TargetX) && (army.Y == army.TargetY))
@@ -427,7 +428,7 @@ public class EmpireTheGame
                 army.TargetX = -1;
                 army.TargetY = -1;
                 //await tasks.Add(army, Tasks.DelayAfterMove);
-                Debugger.Break(); //see how we are going to create this delay
+                //Debugger.Break(); //see how we are going to create this delay
                 break;
             }
 

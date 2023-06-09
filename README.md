@@ -1,6 +1,6 @@
 # Empire
 
-https://discord.gg/ptG5sNwS
+(link off)
 
 Link to a live coding session if somebody wants to join and comment. :)
 

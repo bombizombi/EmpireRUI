@@ -28,7 +28,12 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
 
         var empire = new EmpireTheGame( mapString, playerCount: 1);
         var player = empire.AddPlayer();
-        player.AddUnit( new Army(0, 0, player));
+        var army = new Army(0, 0, player);
+        player.AddUnit( army);
+
+        //debug create standing orders
+        army.DebugCreateStandingOrder(StandingOrders.LongGoto, 10, 0);
+        player.AddUnit(new Army(1, 1, player));
 
 
 

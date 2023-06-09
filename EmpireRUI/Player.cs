@@ -36,7 +36,18 @@ public class Player
 
         subjectDump = new BehaviorSubject<string>(Dump());
         //subjectDump.OnNext(Dump());
-        DumpObs = subjectDump.AsObservable();
+        var slowDump = subjectDump
+            .AsObservable()
+            .Select(x =>
+                Observable
+                    .Empty<string>()
+                    .Delay(TimeSpan.FromSeconds(0.2))
+                    .StartWith(x))
+            .Concat()
+            .ObserveOn(RxApp.MainThreadScheduler);
+
+        //DumpObs = subjectDump.AsObservable(); //this will put nondelayed obs as public
+        DumpObs = slowDump;
     }
 
     public void RenderFoggy()
@@ -235,8 +246,11 @@ public class Player
                 if (u.StandingOrder != StandingOrders.None)
                 {
                     //armyMoved = await HandleStandingOrders(u, tasks);
-                    armyMoved = await HandleStandingOrders(u, tasks);
+                    armyMoved =HandleStandingOrders(u);
                 }
+                //logic here is wrong, if we first auto-move unit and then activate if there are still steps left
+                //we never give MainGameLoop chance to create some delay between steps (so that user can actually
+                //see what is happening)
                 if (!armyMoved && (u != ignore))
                 {
                     ActiveUnit = u;
@@ -252,7 +266,7 @@ public class Player
     }
 
     //private async Task<bool> HandleStandingOrders(IUnit u, FeedbackTasks tasks)
-    private async Task<bool> HandleStandingOrders(IUnit u)
+    private bool HandleStandingOrders(IUnit u)
     {
         //return true if standing order caused this army to spend all its steps
 
@@ -286,6 +300,32 @@ public class Player
         //    c.NewTurn(this);
         //}
     }
+
+    public IUnit? FriendlyContainerAtLoc(int x, int y)
+    {
+        foreach (var u in units)
+        {
+            Debug.Assert(false); //turn on when Trasport is implemented
+            //if (!((u.GetType() == typeof(Transport)) || (y.GetType() == typeof(Carrier)))) continue;
+            if (!((u.X == x) && (u.Y == y))) continue;
+            return u;
+        }
+        return null;
+    }
+
+    public IUnit? FriendlyUnitAtLoc(int x, int y)
+    {
+        foreach (var u in units)
+        {
+            //if (!((u.GetType() == typeof(Transport)) || (y.GetType() == typeof(Carrier)))) continue;
+            if (!((u.X == x) && (u.Y == y))) continue;
+            return u;
+        }
+        return null;
+    }
+
+
+
 
 
 
