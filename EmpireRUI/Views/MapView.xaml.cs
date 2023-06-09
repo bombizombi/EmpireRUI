@@ -32,6 +32,8 @@ public partial class MapView : MapViewBase
             .WhenActivated(
                 disposables =>
                 {
+                    this.tbMessages.Focus();
+
                     this
                         .OneWayBind(this.ViewModel, vm => vm.MapString, v => v.tbMap.Text)
                         .DisposeWith(disposables);
@@ -66,7 +68,7 @@ public partial class MapView : MapViewBase
             .WhenActivated(
                 disposables =>
                 {
-                    _ = ViewModel?.StartMainGameLoop();
+                    _ = ViewModel?.MainGameLoop();
                 });
 
         SetupKeyboardObservable();

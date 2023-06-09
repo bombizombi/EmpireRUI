@@ -37,7 +37,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     public string UrlPathSegment { get; } = "Map";
     public IScreen HostScreen { get; }
 
-    public async Task StartMainGameLoop()
+    public async Task MainGameLoop()
     {
         //this method could belong to the game model
 
@@ -59,6 +59,9 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //send interaction result(game move?) to the game model
 
             var army = empire.Players[0].ActivateUnit();
+            //ActivateUnit will also execute standing orders which means we need some delays to display moves
+
+
             if( army is not null)
             {
                 Debug.WriteLine($"Activated army {army.Name}.");
@@ -81,7 +84,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //await Observable.Interval(TimeSpan.FromSeconds(1)).Take(2);
 
             gameOver = empire.Players[0].IsDead(); 
-            Debug.WriteLine("main game loop {count} - gameOver: " + gameOver);
+            Debug.WriteLine($"main game loop {count} - gameOver: {gameOver}");
             count++;
         } while( !gameOver );
 
