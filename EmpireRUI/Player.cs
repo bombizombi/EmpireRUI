@@ -231,13 +231,12 @@ public class Player
             if (u.StepsAvailable > 0)
             {
                 bool armyMoved = false;
-                /* TODO
                 //check for standing orders
                 if (u.StandingOrder != StandingOrders.None)
                 {
+                    //armyMoved = await HandleStandingOrders(u, tasks);
                     armyMoved = await HandleStandingOrders(u, tasks);
                 }
-                */
                 if (!armyMoved && (u != ignore))
                 {
                     ActiveUnit = u;
@@ -251,6 +250,31 @@ public class Player
         }
         return ActiveUnit;
     }
+
+    //private async Task<bool> HandleStandingOrders(IUnit u, FeedbackTasks tasks)
+    private async Task<bool> HandleStandingOrders(IUnit u)
+    {
+        //return true if standing order caused this army to spend all its steps
+
+        switch (u.StandingOrder)
+        {
+            case StandingOrders.LongGoto:
+                //return await app.LongMoveStep(u, tasks);
+                return app.LongMoveStep(u);
+                break;
+            case StandingOrders.Explore:
+                Debug.Assert(false);
+                //return await app.ExploreStep(u, tasks);
+                break;
+            default:
+                Debugger.Break(); //unknown standing order
+                break;
+        }
+        return false;
+    }
+
+
+
     public void NewMove()
     {
         foreach (var u in units)

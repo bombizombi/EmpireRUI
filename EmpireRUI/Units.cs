@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace EmpireRUI;
+﻿namespace EmpireRUI;
 
 public interface IUnit 
 {
@@ -14,9 +12,9 @@ public interface IUnit
     void MoveTo(int x, int y);
 
     public void NewTurn();
-    //public StandingOrders StandingOrder { get; set; }
-    //public int TargetX { get; set; }
-    //public int TargetY { get; set; }
+    public StandingOrders StandingOrder { get; set; }
+    public int TargetX { get; set; }
+    public int TargetY { get; set; }
 
 
     //public bool IsVisible();
@@ -33,6 +31,7 @@ public interface IUnit
     ////public void Explore();
     //public bool ShipContainsUnit(IUnit u);
     //public List<Loc> RenderFoggy();
+    public void RenderFoggy();
 
 
     //public FoggyMap GetUnitType();
@@ -42,7 +41,7 @@ public interface IUnit
     //public string DebugStatus();
 
     //22
-
+    public void HackMoveAndReduceSteps(int dx, int dy);
 }
 
 
@@ -57,9 +56,11 @@ public class Army : IUnit
     private int stepsAvailable = 1;
     public int hitpoints;
 
-    //public StandingOrders standingOrder;
-    //public int targetX, targetY;
-    //private bool unitIsContained;
+
+    public StandingOrders standingOrder;
+    public int targetX, targetY;
+    private bool unitIsContained;
+
     public Army(int x, int y, Player p, int stepsLeft=-1, int hitPointsLeft = -1)
     {
         Army.count++;
@@ -98,6 +99,15 @@ public class Army : IUnit
 
 
     }
+    public void HackMoveAndReduceSteps(int stepX, int stepY)
+    {
+        x += stepX; //this is wrong
+        y += stepY;
+        stepsAvailable -= 1;
+        //var locs = army.RenderFoggy();
+        RenderFoggy();
+    }
+
 
     public void NewTurn()
     {
@@ -121,6 +131,11 @@ public class Army : IUnit
     public int X => x;
     public int Y => y;
     public string Name => name;
+
+    public StandingOrders StandingOrder { get { return standingOrder; } set { standingOrder = value; } }
+    public int TargetX { get { return targetX; } set { targetX = value; } }
+    public int TargetY { get { return targetY; } set { targetY = value; } }
+
     public int StepsAvailable => stepsAvailable;
     public int Hitpoints => hitpoints;
 
@@ -128,4 +143,16 @@ public class Army : IUnit
 
 
 } //end Army
+
+
+
+public enum StandingOrders
+{
+    None,
+    LongGoto,
+    Sentry,
+    Explore,
+}
+
+
 

@@ -431,7 +431,6 @@ namespace Empire.Models
         LongGoto,
         Sentry,
         Explore,
-
     }
 
 

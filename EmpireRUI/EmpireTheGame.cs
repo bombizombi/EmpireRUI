@@ -91,6 +91,9 @@ public class EmpireTheGame
             case GameOrder.Type.Move:
                 DebugMoveDirection(tempMove2.x, tempMove2.y);
                 break;
+            case GameOrder.Type.LongMove:
+                DebugLongMoveTo(tempMove2.x, tempMove2.y);
+                break;
             default:
                 Debug.Assert(false, "unknown game order type");
                 break;
@@ -102,8 +105,15 @@ public class EmpireTheGame
     {
         var army = Players.First().Units.First();
         MoveTo(army.X + deltax, army.Y + deltay, army);
+    }
+    public void DebugLongMoveTo(int deltax, int deltay)
+    {
+        var army = Players.First().ActiveUnit; 
+        MoveTo(army.X + deltax, army.Y + deltay, army);
 
     }
+
+
     public void DebugMoveRight()
     {
         var army = Players.First().Units.First();
@@ -299,6 +309,139 @@ public class EmpireTheGame
 
     //222222222222222222222222222222222222
 #endif
+
+
+
+
+    /* long move command, coppied but not coverted
+
+    //11
+    public async Task<bool> LongMoveTo(int x, int y, FeedbackTasks tasks)
+    {
+
+
+
+        //long move:
+        //           -save target cell
+        //           -find path (major pita)
+        //           -do moves up to unit steps left
+
+        if (!CheckMapEdges(x, y)) return false; ;
+
+        var army = ActivePlayer.ActiveUnit;
+
+        if (army == null) return false;
+
+        //long move
+        //if (Math.Abs(y - army.y) > 1) return false;
+        //if (Math.Abs(x - army.x) > 1) return false;
+        if ((army.X == x) && (army.Y == y)) return false;
+        //also do not alow going nowhere
+
+
+
+        //validate?
+
+        //get land type
+        MapType type = map.map[x + y * map.sizeX];
+
+        //might be able to send it into unknown land type
+        //for now, leave checks the same as for a single step
+
+        //check unit if it likes it
+        if (!army.CanStepOn(type)) return false;
+
+        //checks passed, save target cell
+        army.StandingOrder = StandingOrders.LongGoto;
+        army.TargetX = x;
+        army.TargetY = y;
+
+        //any actual move will be done in the next turn as well.
+
+        //terrain check should be moved to the steps part from the init part
+
+        //extract actual long step
+        await LongMoveStep(army, tasks);
+
+
+        await CheckEndOfTurn(tasks);
+
+        //end extract actual long step
+
+        return true;
+    }
+    */
+
+
+
+    //public async Task<bool> LongMoveStep(IUnit army, FeedbackTasks tasks)
+    public bool LongMoveStep(IUnit army)
+    {
+
+        //await tasks.Add(army, Tasks.DelayBeforeMove);
+        Debugger.Break(); //see how we are going to create this delay
+
+        do
+        {
+
+            int deltax = army.TargetX - army.X;
+            int deltay = army.TargetY - army.Y;
+            //TODO this dissregards terrain or any armies in the way
+
+            Debug.Assert(!((deltax == 0) && (deltay == 0)), "long goto with no deltas");
+
+            //trivial path finding
+            int stepX = 0, stepY = 0;
+            if (deltax != 0) stepX = deltax / Math.Abs(deltax); //unit vector in direction of target
+            if (deltay != 0) stepY = deltay / Math.Abs(deltay); //unit vector in direction of target
+
+
+            if (army.StepsAvailable == 0)
+            {
+                //await tasks.Add(army, Tasks.DelayAfterMove);
+                Debugger.Break(); //see how we are going to create this delay
+                return false;
+            }
+
+            //long move step behaves differently, it does not attack, it does not load
+            //but does it enter cities?  Since it looses steps, perhaps it should avoid entering cities if possible
+
+
+            //this might step onto a city or an emety unit, without attacking, without entering
+            army.HackMoveAndReduceSteps(stepX, stepY);
+            //army.X += stepX; //this is wrong
+            //army.Y += stepY;
+            //army.StepsAvailable -= 1;
+            ////var locs = army.RenderFoggy();
+            //army.RenderFoggy();
+
+
+            //await tasks.Add(army, Tasks.DelayInbetweenSteps, locs);
+            Debugger.Break(); //see how we are going to create this delay
+
+            //target reached?
+            if ((army.X == army.TargetX) && (army.Y == army.TargetY))
+            {
+                army.StandingOrder = StandingOrders.None;
+                //clear target coordinates
+                army.TargetX = -1;
+                army.TargetY = -1;
+                //await tasks.Add(army, Tasks.DelayAfterMove);
+                Debugger.Break(); //see how we are going to create this delay
+                break;
+            }
+
+        } while (army.StepsAvailable > 0);
+
+        return army.StepsAvailable == 0;
+
+    }
+
+
+
+    //22222222
+
+
 
 
     private bool CheckMapEdges(int x, int y)
