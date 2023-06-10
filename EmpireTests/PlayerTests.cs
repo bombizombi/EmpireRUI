@@ -208,3 +208,56 @@ public class PlayerTestsStandingOrderGivesFeedback
 
 
 }
+
+
+public class PlayerTestsCities
+{
+    private EmpireTheGame empire;
+    private Player player;
+    public PlayerTestsCities()
+    {
+        string map = """
+                         o#oo
+                         ..o.
+                         ..#o
+                         """;
+        //var empire = EmpireTheGame.FromString(map, playerCount: 2);
+        empire = new EmpireTheGame(map, playerCount: 1);
+        player = empire.AddPlayer();
+    }
+
+    [Fact]
+    public void PlayersArmiesConguerCitiesWin()
+    {
+        var army = new Army(0, 0, player);
+        player.AddUnit(army);
+        empire.MoveTo(1, 0, army);
+
+
+        string expectedFoggyMapString = """
+                         o1oo
+                         ..o.
+                         ..#o
+                         """;
+
+        bool observableHappened = false;
+        string result = "";
+        int count = 0;
+        empire.Players.First().DumpObs.Subscribe(x =>
+        {
+            count++;
+            result = x;
+            observableHappened = true;
+        });
+
+        Assert.True(observableHappened);
+        Assert.Equal(expectedFoggyMapString, result);
+        Assert.Equal(1, count);
+
+    }
+
+
+
+}
+
+

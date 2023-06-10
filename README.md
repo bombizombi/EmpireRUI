@@ -131,6 +131,10 @@ Observables have a much nicer model, and you can reference obserbavles just in t
 Right now, it only does the text dumps, and the game model has global subject(s) where it can send the change 
 notifications.  The other option is to always pass it as a parameter.  
 
-
+In order to start conquering the world:
+-transporters
+-city fight
+-city production
+-mark active somehow 
 
 

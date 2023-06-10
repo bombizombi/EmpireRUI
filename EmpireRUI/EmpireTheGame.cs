@@ -164,8 +164,8 @@ public class EmpireTheGame
         MapType type = Map.Map[x + y * Map.SizeX];
 
 
-        ////this is no good.  Armies attack enemy and neutral cities, but enter their cities
-        //if (type == MapType.city) return Move_HandleCity(army, x, y);
+        //this is no good.  Armies attack enemy and neutral cities, but enter their cities
+        if (type == MapType.city) return Move_HandleCity(army, x, y);
 
 
 
@@ -373,6 +373,54 @@ public class EmpireTheGame
     }
     */
 
+
+    private bool Move_HandleCity(IUnit u, int x, int y)
+    {
+        //return value not used before
+
+
+        City? city = ActivePlayer.FindCity(x, y);
+        bool cityOwnedByPlayer = city != null;
+        if (cityOwnedByPlayer)
+        {
+            u.X = x;
+            u.Y = y;
+            u.StepsAvailable -= 1;
+
+            //enter the city
+            u.EnterCity();
+
+            return true;
+        }
+
+
+        //check unit if it hates it
+        if (u.CanAttackIt(MapType.city))
+        {
+            //well, attack it is
+
+            //attack on a city?
+
+            bool cityAttackWon = u.AttackCity();
+            if (cityAttackWon)
+            {
+                //remove from previous owner, also handle units inside TODO
+                ActivePlayer.AddCity(x, y);
+            }
+            else
+            {
+            }
+            u.Die(); //winning army spreads around the city and lives a long peaceful life
+
+            //fight visaul feedback?
+
+            //? yeah, but what about enemy units
+            //Debugger.Break();
+
+        }
+        return true;
+
+    }
 
 
     //public async Task<bool> LongMoveStep(IUnit army, FeedbackTasks tasks)

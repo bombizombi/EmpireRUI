@@ -22,8 +22,8 @@ public interface IUnit
     public bool CanStepOn(MapType type);
     //public bool IsInSentry();
 
-    //public void EnterCity();
-    //public bool AttackCity();
+    public void EnterCity();
+    public bool AttackCity();
     //public void LoadContainer(); //this unit enters a container
     //public void LoadUnit(IUnit u, int x, int y); //this containers gets a new passanger unit
     //public void UnloadUnit(IUnit u);
@@ -107,6 +107,14 @@ public class Army : IUnit
         //var locs = army.RenderFoggy();
         RenderFoggy();
     }
+
+    public virtual void EnterCity()
+    {
+        //entering the city removes all steps, and resets unit range
+        stepsAvailable = 0;
+        unitIsContained = true;
+    }
+
 
 
     public void NewTurn()

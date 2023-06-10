@@ -8,7 +8,7 @@ public class Player
 {
     EmpireTheGame app;
     private List<IUnit> units;
-    //private List<City> cities;
+    private List<City> cities;
 
     public FoggyMapElem[,] map;
 
@@ -20,7 +20,7 @@ public class Player
     {
         this.app = app;
         units = new List<IUnit>();
-        //cities = new List<City>();
+        cities = new List<City>();
 
         map = new FoggyMapElem[app.Map.SizeX, app.Map.SizeY];
         for (int y = 0; y < app.Map.SizeY; y++)
@@ -48,6 +48,8 @@ public class Player
 
         //DumpObs = subjectDump.AsObservable(); //this will put nondelayed obs as public
         DumpObs = slowDump;
+
+        //expose normal dump as well for testing
     }
 
     public void RenderFoggy()
