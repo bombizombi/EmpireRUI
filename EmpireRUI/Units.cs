@@ -18,7 +18,7 @@ public interface IUnit
 
 
     //public bool IsVisible();
-    //public bool CanAttackIt(MapType type);
+    public bool CanAttackIt(MapType type);
     public bool CanStepOn(MapType type);
     //public bool IsInSentry();
 
@@ -35,7 +35,7 @@ public interface IUnit
 
 
     //public FoggyMap GetUnitType();
-    //public void Die();
+    public void Die();
 
 
     //public string DebugStatus();
@@ -101,6 +101,7 @@ public class Army : IUnit
     }
     public void HackMoveAndReduceSteps(int stepX, int stepY)
     {
+        //this is kind of exactly the same as the one above
         x += stepX; //this is wrong
         y += stepY;
         stepsAvailable -= 1;
@@ -131,6 +132,34 @@ public class Army : IUnit
     }
     public virtual bool CanStepOn(MapType type) => type == MapType.land;
 
+    public virtual bool CanAttackIt(MapType type) => type == MapType.city; //lol, we can attack more
+
+
+    public bool AttackCity()
+    {
+        //armies only?
+        if (rnd.NextDouble() < 0.5)  //TODO configurable probs?
+        {
+            hitpoints--;
+            if (hitpoints == 0)
+            {
+                Debug.WriteLine("-------------------------------------------------------------City attacked and we lose.");
+                Die();
+                return false;
+            }
+        }
+        Debug.WriteLine("-----------------------------00000000----------------------------City attacked and we win.");
+        return true;
+    }
+
+
+
+
+    public void Die()
+    {
+        player.UnitKilled(this);
+    }
+
 
 
     protected static int count = 0;
@@ -158,10 +187,35 @@ public class Army : IUnit
 
     public int BaseFoggyType => (int)FoggyMap.army;
 
+    public static IRandom rnd = new EmpireRandom();
+
 
 } //end Army
 
 
+public interface IRandom
+{
+    public double NextDouble();
+}
+public class EmpireRandom : IRandom
+{
+    public double NextDouble() => rnd.NextDouble();
+    private static Random rnd = new Random();
+}
+public class RandomForTesting : IRandom
+{
+    private double[] probs;
+    public RandomForTesting(double[] probs)
+    {
+        this.probs = probs;
+    }
+    public double NextDouble()
+    {
+        var p = probs[0];
+        probs = probs.Skip(1).ToArray();
+        return p;
+    }
+}
 
 public enum StandingOrders
 {

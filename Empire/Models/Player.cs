@@ -161,7 +161,7 @@ namespace Empire.Models
 
             //should remove all production from city, so that it shows the dialog
             freeCity.ResetProduction();
-            app.map.cities.Remove(freeCity);
+            app.map.cities.Remove(freeCity); //directy reaching into map internals
             cities.Add(freeCity); //not so free anymore
 
             //conquer city

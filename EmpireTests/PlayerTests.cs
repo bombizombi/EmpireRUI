@@ -227,18 +227,20 @@ public class PlayerTestsCities
     }
 
     [Fact]
-    public void PlayersArmiesConguerCitiesWin()
+    public void PlayersArmiesConquerCitiesWin()
     {
         var army = new Army(0, 0, player);
         player.AddUnit(army);
+        Army.rnd = new RandomForTesting(new double[] { 1 });
         empire.MoveTo(1, 0, army);
 
 
+
         string expectedFoggyMapString = """
-                         o1oo
-                         ..o.
-                         ..#o
-                         """;
+                         o1o 
+                         ..o 
+                             
+                         """ + "\r\n";
 
         bool observableHappened = false;
         string result = "";
@@ -253,6 +255,14 @@ public class PlayerTestsCities
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
         Assert.Equal(1, count);
+
+        
+        var army2 = new Army(2, 1, player);
+        player.AddUnit(army2);
+        empire.MoveTo(1, 0, army2);
+
+        Assert.Equal((1, 0), (army2.X, army2.Y)); //while in a city, army should have correct loc
+
 
     }
 

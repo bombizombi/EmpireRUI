@@ -58,13 +58,14 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //start interaction
             //send interaction result(game move?) to the game model
 
-            var army = empire.Players[0].ActivateUnit();
+            //var army = empire.Players[0].ActivateUnit();
+            var army = empire.ActivePlayer.ActivateUnit();
             //ActivateUnit will also execute standing orders which means we need some delays to display moves
 
 
-            if( army is not null)
+            if ( army is not null)
             {
-                Debug.WriteLine($"Activated army {army.Name}.");
+                Debug.WriteLine($"Activated army {army.Name} at {army.X},{army.Y}.");
 
 
                 Debug.WriteLine($"before requesting interaction {count}. ");
@@ -72,7 +73,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
                 Debug.WriteLine("tempCommands: " + tempMove2.ToString());
 
                 empire.GameMove(tempMove2);
-
+                await CheckConqueredCities();
             }
             else
             {
@@ -107,6 +108,25 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
 
     }
+
+    private async Task CheckConqueredCities()
+    {
+        var cities = empire.ActivePlayer.GetCities()
+            .Where(c => c.production == ProductionEnum.uninitialized);
+        foreach (var c in cities)
+        {
+            var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+            var rez = await ProductionInteraction.Handle(prod.Production);
+            c.SetProduction( (int)rez.production);
+
+        }
+
+        //var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+        //var rez = await ProductionInteraction.Handle(prod.Production);
+
+    }
+
+
 
     public Interaction<string, GameOrder> interactionMove = new(); //property?
     //string imput parameter is unused

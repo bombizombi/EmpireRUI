@@ -136,6 +136,8 @@ public class EmpireTheGame
     {
         //normal move means only neighbour cells, even for units with longer range
 
+        //currenty, armies that attack and die do not update foggy map
+
         //can only move to land close by, and can't step on the edge
         if (!CheckMapEdges(x, y))
         {
@@ -383,10 +385,13 @@ public class EmpireTheGame
         bool cityOwnedByPlayer = city != null;
         if (cityOwnedByPlayer)
         {
-            u.X = x;
-            u.Y = y;
-            u.StepsAvailable -= 1;
-
+            //u.X = x;
+            //u.Y = y;
+            //u.StepsAvailable -= 1;
+            //u.HackMoveAndReduceSteps(x , y ); //bug
+            u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
+            //Debugger.Break(); //stop here and check who does rendering in this case
+            //the city does
             //enter the city
             u.EnterCity();
 
@@ -394,7 +399,7 @@ public class EmpireTheGame
         }
 
 
-        //check unit if it hates it
+        //check if unit hates it
         if (u.CanAttackIt(MapType.city))
         {
             //well, attack it is
@@ -406,13 +411,20 @@ public class EmpireTheGame
             {
                 //remove from previous owner, also handle units inside TODO
                 ActivePlayer.AddCity(x, y);
+                //winning army spreads around the city and lives a long peaceful life
             }
             else
             {
+                //losing army just dies
             }
-            u.Die(); //winning army spreads around the city and lives a long peaceful life
+            u.Die();  //turns out u.AttackCity already kills the unit
+                      //but your death was not in vain, you get so see a little bit of map around the city
+            ActivePlayer.RenderFoggyForXY(x,y);
+
 
             //fight visaul feedback?
+
+            //
 
             //? yeah, but what about enemy units
             //Debugger.Break();

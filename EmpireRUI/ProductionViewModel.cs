@@ -23,6 +23,7 @@ public class ProductionViewModel : ReactiveObject, IRoutableViewModel
             { 
                 interaction.SetOutput(productionData);
             }
+            HostScreen.Router.NavigateBack.Execute( Unit.Default);
         });
 
 

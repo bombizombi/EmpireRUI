@@ -52,6 +52,24 @@ public class Player
         //expose normal dump as well for testing
     }
 
+
+    public string Dump()
+    {
+        var rez = new StringBuilder();
+        for (int y = 0; y < app.Map.SizeY; y++)
+        {
+            for (int x = 0; x < app.Map.SizeX; x++)
+            {
+                FoggyMapElem type = map[x, y];
+                rez.Append(type.Dump());
+            }
+            rez.AppendLine();
+        }
+        return rez.ToString();
+    }
+
+
+
     public void RenderFoggy()
     {
 
@@ -186,33 +204,59 @@ public class Player
         //return changedlocs;
     }
 
-    private bool CheckActualCityOwner(int v1, int v2, out int playerIndex)
+
+    public City? FindCity(int x, int y)
     {
-        playerIndex = -1;
+        City? city = cities.Find(c => c.x == x && c.y == y);
+        return city;
+    }
+
+    private bool CheckActualCityOwner(int x, int y, out int playerIndex)
+    {
+        //return true if city is owned by anybody
+        //for each player, for each city
+        for (int i = 0; i < app.Players.Length; i++)
+        {
+            var player = app.Players[i];
+            if (player.FindCity(x, y) is not null)
+            {
+                playerIndex = i;
+                return true;
+            }
+        }
+        playerIndex = -9999;
         return false;
     }
 
+    public void AddCity(int x, int y)
+    {
+        //this does not handle enemy cities
 
-
-    public string Dump()
-    {   
-        var rez = new StringBuilder();
-        for (int y = 0; y < app.Map.SizeY; y++)
+        //find city?
+        City? freeCity = app.Map.Cities.Find(c => c.x == x && c.y == y);
+        if (freeCity is null)
         {
-            for (int x = 0; x < app.Map.SizeX; x++)
-            {
-                FoggyMapElem type = map[x, y];
-                rez.Append(type.Dump());
-            }
-            rez.AppendLine();
+            Debug.Assert(false, "adding a non-existant city.");
+            return;
         }
-        return rez.ToString();
+
+        //should remove all production from city, so that it shows the dialog
+        freeCity.ResetProduction();
+        app.Map.Cities.Remove(freeCity);
+        cities.Add(freeCity); //not so free anymore
+
+        //conquer city TODO
+
     }
+
+
+
+
+
 
     internal bool IsDead()
     {
-        return !GetArmies().Any();
-        //TODO count cities and units
+        return (!GetArmies().Any()) && (!GetCities().Any());
         //return true; //player dead
     }
 
@@ -297,11 +341,17 @@ public class Player
         {
             u.NewTurn();
         }
-        //foreach (var c in cities)
-        //{
-        //    c.NewTurn(this);
-        //}
+        foreach (var c in cities)
+        {
+            c.NewTurn(this);
+        }
     }
+
+    public void UnitKilled(Army u)
+    {
+        units.Remove(u);
+    }
+
 
     public IUnit? FriendlyContainerAtLoc(int x, int y)
     {
@@ -335,6 +385,11 @@ public class Player
     {
         return units;
     }
+    public List<City> GetCities()
+    {
+        return cities;
+    }
+
     public List<IUnit> Units => GetArmies();
 
     //public IUnit? ActiveUnit => null; //TODO

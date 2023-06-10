@@ -9,7 +9,7 @@ public class MapHolder
     public int SizeY { get; set; }
     //public byte[] map;  //code like it's 1989.
     public MapType[] Map;
-    //public List<City> Cities {get;set}
+    public List<City> Cities { get; set; }
 
 
     public MapHolder(string mapString)
@@ -18,6 +18,7 @@ public class MapHolder
         SizeX = lines[0].Length;
         SizeY = lines.Length;
         Map = new MapType[SizeX * SizeY];
+        Cities = new List<City>();
 
         for (int y = 0; y < SizeY; y++)
         {
@@ -31,6 +32,13 @@ public class MapHolder
                     _ => MapType.unknown
                 };
                 Map[x + y * SizeX] = type;
+
+                if( type == MapType.city)
+                {
+                    var c = new City(x, y);
+                    Cities.Add(c);
+                }
+
             }
         }
 
