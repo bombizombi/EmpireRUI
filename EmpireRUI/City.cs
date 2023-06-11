@@ -8,6 +8,8 @@ public class City
 
     public int remaining;
 
+    public bool ChangeRequest { get; set;}
+
     public City(int inx, int iny)
     {
         x = inx;
@@ -37,6 +39,7 @@ public class City
             //create diff units from "production" var
             //Army a = new Army(x, y, player);
             IUnit a = CreateIUnit(production, player);
+
             player.AddUnit(a);
 
             //reset production
@@ -60,10 +63,10 @@ public class City
             case ProductionEnum.army:
                 unit = new Army(x, y, player);
                 break;
-                /*
             case ProductionEnum.transport:
                 unit = new Transport(x, y, player);
                 break;
+            /*
             case ProductionEnum.figher:
                 unit = new Fighter(x, y, player);
                 break;
@@ -74,6 +77,7 @@ public class City
                 break;
 
         }
+        unit.ContainBrandNewUnit();
         return unit;
     }
 

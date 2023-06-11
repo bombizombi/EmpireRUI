@@ -11,10 +11,11 @@
              Background="LightSeaGreen"
                         PreviewMouseLeftButtonDown="MainMenuViewBase_PreviewMouseLeftButtonDown"
                         >
-    <w:AutoGrid Rows="Auto, Auto,*">
+    <w:AutoGrid Rows="Auto, Auto, Auto,*">
         <Button Content="New Game" Margin="6" x:Name="newGame" />
         <Button Content="Mini map" Grid.Row="1" Margin="6"/>
-        <Canvas Grid.Row="2" x:Name="canvas" PreviewKeyDown="canvas_KeyDown" Background="Transparent" PreviewMouseLeftButtonDown="canvas_PreviewMouseLeftButtonDown" >
+        <Button Content="Conquer the world" Grid.Row="2" Margin="6" x:Name="conquerTheWorld" />
+        <Canvas Grid.Row="3" x:Name="canvas" PreviewKeyDown="canvas_KeyDown" Background="Transparent" PreviewMouseLeftButtonDown="canvas_PreviewMouseLeftButtonDown" >
         </Canvas>
     </w:AutoGrid>
 </local:MainMenuViewBase>

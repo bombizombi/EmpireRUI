@@ -1,4 +1,6 @@
-﻿using System.Reflection.PortableExecutable;
+﻿using System.IO;
+using System.Windows.Shapes;
+//using System.Reflection.PortableExecutable;
 
 namespace EmpireRUI;
 
@@ -33,7 +35,7 @@ public class MapHolder
                 };
                 Map[x + y * SizeX] = type;
 
-                if( type == MapType.city)
+                if (type == MapType.city)
                 {
                     var c = new City(x, y);
                     Cities.Add(c);
@@ -72,7 +74,171 @@ public class MapHolder
         }
         return rez.ToString();
     }
-}
+
+
+    /* map format:  first 4 bytes, map size x and y, (reduced by 1)
+     * map is run-length encoded, bits 0 and 1 are the cell type
+     *   1 - city
+     *   2 - sea
+     *   3 - land
+     * bits 2-7 are run length -1, (add 1 to get the length)
+     * 
+     * after the map data, there is a list of 16 bit numbers with a count of cities on the continet the city is on
+     */
+
+    //public int NumberOfCells { get { return sizeX * sizeY; } }
+
+    public void WhatAreThoseErrors()
+    {
+
+    }
+
+    public void LoadMapFromFile()
+    {
+        var map = MapLoader_Load ();
+        Map = map;
+
+        SizeX = sizeX;
+        SizeY = sizeY;
+        Cities = cities;
+    }
+
+    public int sizeX = 0;
+    public int sizeY = 0;
+    public MapType[] map_old;
+    public List<City> cities;
+
+    int a123 = 123;
+
+
+    public MapType[] MapLoader_Load()
+    {
+        StringBuilder rez = new();
+        string[] dbgdisplay = new string[] { "?", "X", ".", "o" };
+        StringBuilder debugCitiesRez = new StringBuilder();
+
+        string fileName = "images/A.MAP";
+
+        MapType[] map;
+
+
+        using (var stream = File.Open(fileName, FileMode.Open))
+        {
+            using (var reader = new BinaryReader(stream, Encoding.ASCII, false))
+            {
+
+                //header
+                byte hbyte = reader.ReadByte();
+                byte lbyte = reader.ReadByte();
+                int sizeY = hbyte * 256 + lbyte + 1;
+
+                hbyte = reader.ReadByte();
+                lbyte = reader.ReadByte();
+                int sizeX = hbyte * 256 + lbyte + 1;
+
+                //map = new byte[ sizeX * sizeY];  //code like it's 1989.
+                map = new MapType[sizeX * sizeY];
+                this.sizeX = sizeX;
+                this.sizeY = sizeY;
+
+                cities = new List<City>();
+
+
+                //map body
+
+                int p = 0;
+                int count = 0;
+                var inccheckcount = () =>
+                {
+                    count++;
+                    if (count % 100 == 0)
+                    {
+                        rez.AppendLine();
+                    }
+                };
+
+
+                int x = 0; int y = 0;
+
+                while (true)
+                {
+
+                    byte a = reader.ReadByte();
+
+                    //int type = a & 3;
+                    MapType type = (MapType)(a & 3);
+                    int length = (a >> 2) + 1;
+
+
+                    if (type == MapType.city)
+                    {
+                        Debug.Assert(length == 1, "cities could be next to each other");
+                        rez.Append(dbgdisplay[(int)type]);
+                        //count++;
+                        inccheckcount();
+
+                        debugCitiesRez.AppendLine("len = " + length);
+                    }
+                    else
+                    {
+
+                        for (int i = 0; i < length; i++)
+                        {
+                            rez.Append(dbgdisplay[(int)type]);
+                            inccheckcount();
+                            //count++;
+                        }
+                    }
+
+
+
+                    //up here is just debug string formating
+                    for (int i = 0; i < length; i++)
+                    {
+                        map[p] = type;
+                        p++;
+
+                        //collect cities
+                        if (type == MapType.city)
+                        {
+                            var c = new City(x, y);
+                            cities.Add(c);
+                        }
+
+                        x++;
+                        if (x >= sizeX)
+                        {
+                            x = 0;
+                            y++;
+                        }
+
+                    }
+
+
+                    //detect when map is done
+                    if (count == sizeX * sizeY)
+                    {
+                        //ignoring continent city counts for now
+                        break;
+                    }
+                }
+            }
+        }
+
+        return map;
+
+    }//end MapLoader_Load
+
+
+
+}//end class MapHolder
+
+
+
+
+
+
+
 
 
 
@@ -120,13 +286,16 @@ public class FoggyMapElem
 
             FoggyMap.army => 'a',
 
+            FoggyMap.transport => 't',
+
+            FoggyMap.activeUnitFlasher => '!',
+            //yy
             _ => '?'
         };
         if (c == '?') Debug.Assert(false, "unknown foggy map type");
         return c;
     }
-}
-
+} //end class FoggyMapElem
 
 
 
@@ -152,6 +321,8 @@ public enum FoggyMap : byte
     //city = 1, ??
     sea = 2,
     land = 3,
+
+    activeUnitFlasher = 8, //will switch between unit char and active unit marker
 
     cityNeutral = 9,
     city = 10,  //city of player 0

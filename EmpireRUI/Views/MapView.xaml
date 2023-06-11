@@ -7,15 +7,20 @@
              xmlns:w="clr-namespace:AutoGrid;assembly=AutoGrid"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <w:AutoGrid Rows="Auto,Auto, Auto, Auto">
-
-        <TextBox x:Name="tbMap" 
-                 Grid.Row="0"
+    <w:AutoGrid Rows="*,Auto,Auto, Auto, Auto, Auto, Auto">
+        <ScrollViewer
+                Grid.Row="0" 
+                HorizontalScrollBarVisibility="Visible" 
+                VerticalScrollBarVisibility="Visible" 
+            
+                >
+            <TextBox x:Name="tbMap" 
                     FontFamily="Consolas"
                     FontSize="16"
                     TextWrapping="Wrap"
                  
                  />
+        </ScrollViewer> 
         <TextBox x:Name="tbMessages"
                     Grid.Row="1" 
                         
@@ -24,5 +29,10 @@
         <Button Content="go right" Grid.Row="2" Click="Button_Click" />
         <Button Content="go downright" Grid.Row="3" Click="Button_Click_1" />
         <Button Content="go downright" Grid.Row="3" Click="Button_Click_2" />
+        <Button Content="sentry" Grid.Row="4" Click="Button_Click_3" />
+        <Button Content="unsentry all units, kind of dumb but here we are" Grid.Row="5" Click="Button_Click_5" />
+        <Button Content="unload" Grid.Row="6" Click="Button_Click_4" />
+        <Button Content="open production window for a city with lowest production"
+                Grid.Row="7" Click="Button_Click_6" />
     </w:AutoGrid>
 </local:MapViewBase>

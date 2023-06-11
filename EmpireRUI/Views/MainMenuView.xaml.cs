@@ -39,6 +39,9 @@ public partial class MainMenuView : MainMenuViewBase
   //              .DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.StartGameCommand, v => v.newGame)
             .DisposeWith (disposables);
+
+            this.BindCommand(ViewModel, vm => vm.ConquerTheWorld, v => v.conquerTheWorld)
+            .DisposeWith (disposables);
            
 
             // Dispose WhenAny bindings to ensure we won't have memory
