@@ -48,6 +48,10 @@ public interface IUnit
 
     //22
     public void HackMoveAndReduceSteps(int dx, int dy);
+    void SetFlashing(bool visible);
+    public void ContainBrandNewUnit();
+
+    public bool IsFlashing { get; }
 }
 
 
@@ -102,6 +106,8 @@ public class Army : IUnit
 
         MoveContainedUnits(x, y);
 
+        MoveContainedUnits(x, y);
+
         RenderFoggy();
 
         //TODO this code will have to be converted to observables 
@@ -110,6 +116,14 @@ public class Army : IUnit
         //await tasks.Add(this, Tasks.DelayInbetweenSteps, locs);
 
 
+    }
+
+
+    public void Sentry()
+    {
+        standingOrder = StandingOrders.Sentry;
+        SetFlashing(false);
+        RenderFoggy();
     }
 
 
@@ -253,8 +267,133 @@ public class Army : IUnit
 
     public static IRandom rnd = new EmpireRandom();
 
+    public void SetFlashing( bool visible)
+    {
+        isFlashing = visible;
+        //?RenderFoggyForArmy(au);
+    }
+    public bool IsFlashing => isFlashing;
+    protected bool isFlashing;
+
+
 
 } //end Army
+
+
+
+
+
+public class Transport : Army
+{
+    private int capacity;
+    //private int loaded;
+
+    private List<IUnit> loadedUnits;
+
+    public Transport(int x, int y, Player p) : base(x, y, p)
+    {
+
+        name = "Transport no " + Army.count;
+
+        capacity = Capacity();
+        loadedUnits = new List<IUnit>();
+
+    }
+
+
+    protected override void MoveContainedUnits(int x, int y)
+    {
+        foreach (var u in loadedUnits)
+        {
+            u.X = x;
+            u.Y = y;
+        }
+    }
+    public override bool ShipContainsUnit(IUnit search)
+    {
+        foreach (var u in loadedUnits)
+        {
+            if (u == search) return true;
+        }
+        return false;
+    }
+
+    public override void LoadUnit(IUnit u, int x, int y)
+    {
+        Debug.Assert(!loadedUnits.Contains(u), "Unit is already inside.");
+
+        loadedUnits.Add(u);
+        u.X = x;
+        u.Y = y;
+        u.StepsAvailable = 0;
+        u.SetFlashing(false);
+
+        u.LoadContainer();
+
+    }
+    public override void UnloadUnit(IUnit u)
+    {
+        loadedUnits.Remove(u);
+    }
+
+
+    public override void Unload()
+    {
+        IUnit? volunteer = null;
+        foreach (var a in loadedUnits)
+        {
+            a.StandingOrder = StandingOrders.None;
+            volunteer = a;
+        }
+        //if( volunteer != null) volunteer.
+        //forgot the idea here
+        //the idea was to force wait on the container ship, and put the volunteer on the top 
+        //also, only if land (or a city) is available for the army
+    }
+
+    public override int Capacity() => 6;
+    public override int FullHitpoints() => 3;
+
+    public override int FullSteps() => 2;
+    public override int BaseFoggyType => (int)FoggyMap.transport;
+
+
+    public override bool CanStepOn(MapType type) => type == MapType.sea;
+
+    public bool CanAttackIt(int type)
+    {
+        return type == 1; //TODO blah, enum needed
+                          //
+    }
+    //public override FoggyMap GetUnitType()
+    //{ //this was used from the GUI rendering code
+    //    return FoggyMap.transport;
+    //}
+
+
+
+} //end class Transport
+
+
+
+public class Fighter : Army
+{
+    public Fighter(int x, int y, Player p, int stepsLeft = -1, int hitPointsLeft = -1) : base(x, y, p, stepsLeft, hitPointsLeft)
+    {
+    }
+}
+
+public class Carrier : Transport
+{
+
+
+    public Carrier(int x, int y, Player p) : base(x, y, p)
+    {
+        name = "Carrier no " + Army.count;
+    }
+
+}
+
 
 
 public interface IRandom

@@ -149,6 +149,45 @@ public class EmpireTheGame
     {
         var army = Players.First().ActiveUnit; 
         MoveTo(army.X + deltax, army.Y + deltay, army);
+    }
+
+    public void OrderSentry()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+
+    }
+    public void OrderUnload()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+        army.Unload();
+        
+    }
+    private void OrderUnsentryAll()
+    {
+        foreach (var army in ActivePlayer.Units)
+        {
+            if( army.StandingOrder == StandingOrders.Sentry)
+            {
+                army.StandingOrder = StandingOrders.None;
+            }
+        }
+    }
+
+    private void HackChangeCityProduction()
+    {
+        var cities = ActivePlayer.GetCities();
+
+        //can you create a query that will sort by remaining descending?
+        var city = cities
+            .Where( c => !c.ChangeRequest )
+            .OrderBy(c => c.remaining).FirstOrDefault();
+        if (city == null) return;
+
+        city.ChangeRequest = true;
+        //city.Production = (city.Production + 1) % 2;
+
 
     }
     public void OrderUnload()
@@ -481,13 +520,15 @@ public class EmpireTheGame
             //u.Y = y;
             //u.StepsAvailable -= 1;
             //u.HackMoveAndReduceSteps(x , y ); //bug
+
+            u.EnterCity(); // do not render
             u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
             //hack move also renders 
 
             //Debugger.Break(); //stop here and check who does rendering in this case
             //the city does
             //enter the city
-            u.EnterCity();
+            u.EnterCity(); //we enter the city too late, its already rendered
 
             return true;
         }
