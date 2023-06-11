@@ -1,4 +1,6 @@
-﻿namespace EmpireRUI;
+﻿using System.Xaml;
+
+namespace EmpireRUI;
 
 /*General class descriptions and responsibilities
  * 
@@ -60,6 +62,25 @@ public class EmpireTheGame
         Players = new Player[playerCount];
     }
 
+    public EmpireTheGame(string map, int playerCount = 2, string filename=null)
+    {
+        Map = new MapHolder(map);
+        Players = new Player[playerCount];
+        if( filename != null)
+        {
+            Map.LoadMapFromFile();
+
+        }
+    }
+
+    public void PickRandomCity()
+    {
+        City city = Map.Cities[0];
+        ActivePlayer.AddCity(city.x, city.y);
+    }
+
+
+
 
     public Player AddPlayer()
     {
@@ -85,14 +106,28 @@ public class EmpireTheGame
 
     internal void GameMove(GameOrder tempMove2)
     {
+        ActivePlayer.ActiveUnit.SetFlashing(false);
+
         //DebugMoveRight();
         switch (tempMove2.type)
         {
             case GameOrder.Type.Move:
-                DebugMoveDirection(tempMove2.x, tempMove2.y);
+                OrderMoveDirection(tempMove2.x, tempMove2.y);
                 break;
             case GameOrder.Type.LongMove:
-                DebugLongMoveTo(tempMove2.x, tempMove2.y);
+                OrderLongMoveTo(tempMove2.x, tempMove2.y);
+                break;
+            case GameOrder.Type.Sentry:
+                OrderSentry();
+                break;
+            case GameOrder.Type.Unload:
+                OrderUnload();
+                break;
+            case GameOrder.Type.UnsentryAll:
+                OrderUnsentryAll();
+                break;
+            case GameOrder.Type.HackChangeCityProduction:
+                HackChangeCityProduction();
                 break;
             default:
                 Debug.Assert(false, "unknown game order type");
@@ -101,16 +136,59 @@ public class EmpireTheGame
 
     }
 
-    public void DebugMoveDirection(int deltax, int deltay)
+    public void OrderMoveDirection(int deltax, int deltay)
     {
         //var army = Players.First().Units.First();
         var army = Players.First().ActiveUnit;
         MoveTo(army.X + deltax, army.Y + deltay, army);
     }
-    public void DebugLongMoveTo(int deltax, int deltay)
+    public void OrderLongMoveTo(int deltax, int deltay)
     {
         var army = Players.First().ActiveUnit; 
         MoveTo(army.X + deltax, army.Y + deltay, army);
+    }
+
+    public void OrderSentry()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+
+        //tasks.Add(army, Tasks.StopBeingActive);
+        //TODO feedback on sentry
+        army.StandingOrder = StandingOrders.Sentry;
+        army.Sentry();
+    }
+    public void OrderUnload()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+        army.Unload();
+        
+    }
+    private void OrderUnsentryAll()
+    {
+        foreach (var army in ActivePlayer.Units)
+        {
+            if( army.StandingOrder == StandingOrders.Sentry)
+            {
+                army.StandingOrder = StandingOrders.None;
+            }
+        }
+    }
+
+    private void HackChangeCityProduction()
+    {
+        var cities = ActivePlayer.GetCities();
+
+        //can you create a query that will sort by remaining descending?
+        var city = cities
+            .Where( c => !c.ChangeRequest )
+            .OrderBy(c => c.remaining).FirstOrDefault();
+        if (city == null) return;
+
+        city.ChangeRequest = true;
+        //city.Production = (city.Production + 1) % 2;
+
 
     }
 
@@ -169,8 +247,6 @@ public class EmpireTheGame
         //this is no good.  Armies attack enemy and neutral cities, but enter their cities
         if (type == MapType.city) return Move_HandleCity(army, x, y);
 
-
-
         //type here has not enough information
         /*
                     //check unit if it hates it
@@ -190,9 +266,9 @@ public class EmpireTheGame
 
                     }*/
 
-        ////check if it can hop on it
-        //var ship = ActivePlayer.FriendlyContainerAtLoc(x, y);
-        //if (ship != null) return Move_HandleLoading(army, x, y, ship);
+        //check if it can hop on it
+        var ship = ActivePlayer.FriendlyContainerAtLoc(x, y);
+        if (ship != null) return Move_HandleLoading(army, x, y, ship);
 
         //check if target loc is already occupied
         var friend = ActivePlayer.FriendlyUnitAtLoc(x, y);
@@ -389,11 +465,15 @@ public class EmpireTheGame
             //u.Y = y;
             //u.StepsAvailable -= 1;
             //u.HackMoveAndReduceSteps(x , y ); //bug
+
+            u.EnterCity(); // do not render
             u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
+            //hack move also renders 
+
             //Debugger.Break(); //stop here and check who does rendering in this case
             //the city does
             //enter the city
-            u.EnterCity();
+            u.EnterCity(); //we enter the city too late, its already rendered
 
             return true;
         }
@@ -415,6 +495,7 @@ public class EmpireTheGame
             }
             else
             {
+                Debugger.Break();
                 //losing army just dies
             }
             u.Die();  //turns out u.AttackCity already kills the unit
@@ -434,6 +515,19 @@ public class EmpireTheGame
 
     }
 
+    private bool Move_HandleLoading(IUnit u, int x, int y, IUnit ship)
+    {
+        //only ships to transports and planes to carriers
+        bool caseArmyToShip = (u.GetType() == typeof(Army)) && (ship.GetType() == typeof(Transport));
+        bool casePlaneToCarrier = (u.GetType() == typeof(Fighter)) && (ship.GetType() == typeof(Carrier));
+
+        if (!(caseArmyToShip || casePlaneToCarrier)) return false;
+
+        ship.LoadUnit(u, x, y);
+
+        ActivePlayer.RenderFoggyForXY(x, y);
+        return true;
+    }
 
     //public async Task<bool> LongMoveStep(IUnit army, FeedbackTasks tasks)
     public bool LongMoveStep(IUnit army)

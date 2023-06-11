@@ -25,6 +25,10 @@ public class GameOrder
     public enum Type
     {
         Move,
-        LongMove
+        LongMove,
+        Sentry,
+        Unload,
+        UnsentryAll,
+        HackChangeCityProduction
     }
 }

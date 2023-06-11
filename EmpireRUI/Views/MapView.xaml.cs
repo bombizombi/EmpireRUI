@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using Microsoft.VisualBasic;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,13 +53,14 @@ public partial class MapView : MapViewBase
                             });
 
                     this.ViewModel
-                        ?.interactionMove
-                        .RegisterHandler(async interaction =>
+                        ?.interactionMove.RegisterHandler(async interaction =>
                         {
-                            tempCommands = new Subject<GameOrder>();
-                            var move = await tempCommands.Take(1);
-                            interaction.SetOutput(move);
-                            tempCommands = null;
+                            await GameLoopInteractionHandler(interaction);
+                            //xx
+                            //tempCommands = new Subject<GameOrder>();
+                            //var move = await tempCommands.Take(1);
+                            //interaction.SetOutput(move);
+                            //tempCommands = null;
                         });
 
                 });
@@ -68,7 +70,8 @@ public partial class MapView : MapViewBase
             .WhenActivated(
                 disposables =>
                 {
-                    _ = ViewModel?.MainGameLoop();
+                    //_ = ViewModel?.MainGameLoop();
+                    _ = ViewModel?.MainGameLoopSafe();
                 });
 
         SetupKeyboardObservable();
@@ -76,6 +79,31 @@ public partial class MapView : MapViewBase
     }
 
     private Subject<GameOrder>? tempCommands = new Subject<GameOrder>();
+
+    private async Task GameLoopInteractionHandler(InteractionContext<string, GameOrder> interaction)
+    {
+        MapViewModel vm = ViewModel;
+
+        //start the active army hearthbeat on start of every interaction
+        var heartbeat = Observable.Interval(TimeSpan.FromSeconds(0.5))
+            .Select(x => x % 2 == 0)
+            //.Do(x => Debug.WriteLine($"heartbeat {x}"))
+            //.TakeUntil(interaction.Input)
+            .SubscribeOn(RxApp.MainThreadScheduler)
+            .Subscribe(x =>
+            {
+                vm.HeartBeat(x);
+                //using captured ViewModel to avoid crashing
+            });
+
+        tempCommands = new Subject<GameOrder>();
+        var move = await tempCommands.Take(1);
+        interaction.SetOutput(move);
+        tempCommands = null;
+
+        Debug.WriteLine($"heartbeat OFFXXXXXXXXXXXXXXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+        heartbeat.Dispose(); //turn it off
+    }
 
     private string InteractionMoveHandler(string input)
     {
@@ -184,8 +212,31 @@ public partial class MapView : MapViewBase
     private void Button_Click_2(object sender, RoutedEventArgs e)
     {
         var order = new GameOrder(GameOrder.Type.LongMove, 10, 0);
-        tempCommands?.OnNext(order);
-        tempCommands?.OnCompleted();
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
+
+    private void Button_Click_3(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.Sentry, -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
+
+    private void Button_Click_4(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.Unload, -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
+
+    private void Button_Click_5(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.UnsentryAll ,  -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
+
+    private void Button_Click_6(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.HackChangeCityProduction, -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
     }
 } //end class MapView
 

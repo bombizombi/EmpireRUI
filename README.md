@@ -132,9 +132,24 @@ Right now, it only does the text dumps, and the game model has global subject(s)
 notifications.  The other option is to always pass it as a parameter.  
 
 In order to start conquering the world:
--transporters
--city fight
--city production
--mark active somehow 
++transporters
++city fight
++city production
++mark active somehow 
+-production change somehow (in text mode)
+-unsentry 
+-load map A
+
+bugs: 
++fresly produced units are not contained
+-while flashing, units do not respond instantly because flashes also append delay after them
+-transporters flash weirdly when on their second step
+-armies refuse to load into transporters
+-when moved as a flash, armies stay as flases :()
++seems like armies are not producing when only handling standing orders
+-when leaving the city, transport should pick up as many armies as it can
+-transports inside cities flash (city-flash sign) instead of (city-transport) 
+-if you sentry all units without owning a city, we get infinite sentry loop without a way to break out
+-unloading armies were not flashing
 
 

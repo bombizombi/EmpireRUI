@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Security.Cryptography.Pkcs;
+using System.Security.Policy;
 
 namespace EmpireRUI;
 
@@ -9,6 +10,7 @@ public class Player
     EmpireTheGame app;
     private List<IUnit> units;
     private List<City> cities;
+    private int moveNumber = 0;
 
     public FoggyMapElem[,] map;
 
@@ -44,8 +46,8 @@ public class Player
                     .Delay(TimeSpan.FromSeconds(0.2))
                     .StartWith(x))
             .Concat()
-            .ObserveOn(RxApp.MainThreadScheduler);
-
+            //.ObserveOn(RxApp.MainThreadScheduler)
+            ;
         //DumpObs = subjectDump.AsObservable(); //this will put nondelayed obs as public
         DumpObs = slowDump;
 
@@ -147,20 +149,50 @@ public class Player
             //foreach players
             //create linq querry that looks trough all players, and all the players armies
             //and if the armies coords match current xt, then do something
+
+            //units can be contained in two different ways:
+            //  -in cities, where they can stack unlimited
+            //  -in transports, where there is a stack limit
+            //when flashing for attention, normal unit switch between unit symbol and terrarin symbol
+            //if they are contained, they switch between unit symbol and container symbol (transp or city or carrier)
+            //
+            //when exploring land, we need to only find one symbol. 
+
             var armies = from player in app.Players
                          from army in player.GetArmies()
                             where army.X == x + dx && army.Y == y + dy
+                            where !army.IsContained || army.IsFlashing
                             select new { army, player };
-            Debug.Assert(armies.Count() <= 1);
+
+            if (armies.Count() > 1)
+            {
+                string debugStringArmies = DebugDumpArmies(x+dx, y+dy);
+                //Debug.WriteLine(debugStringArmies);
+                //Debug.Assert(false, "trying to draw more than one army at the same spot");
+                //this is fine for containers that are trying to unload
+
+            }
+            //Debug.Assert(armies.Count() <= 1);
+            //this will trigger if we hit the city with more than one unit inside
 
             armies.ToList().ForEach(x =>
+            {
+                if( x.army is Transport)
+                {
+                    //Debugger.Break();
+                }
 
-                tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index)
+                tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
 
-                    //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
-                    //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
+                //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
+                //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
+                //yy
+                if (x.army.IsFlashing)
+                {
+                    tileType = FoggyMap.activeUnitFlasher;
+                }
 
-            );
+            });
             //app.Players
 
 
@@ -203,6 +235,54 @@ public class Player
         subjectDump.OnNext(Dump());
         //return changedlocs;
     }
+
+    private string DebugDumpArmies(int x, int y)
+    {
+        var rez = new StringBuilder();
+        //armies from this player
+        foreach (var army in units)
+        {
+            rez.AppendLine($"at ({army.X,2},{army.Y,2}) army {army.Name} ");
+        }
+        //armies from all the players
+
+        rez.AppendLine();
+        rez.AppendLine("now, units from all players");
+        var allArmies = from player in app.Players
+                     from army in player.GetArmies()
+                     where army.X == x  && army.Y == y 
+                     where !army.IsContained || army.IsFlashing
+                     select new { army, player };
+        foreach (var armyObj in allArmies)
+        {
+            var army = armyObj.army;
+            string d = "";
+            if (army.IsContained)
+            {
+                d = "contained ";
+            }
+            if (army.IsFlashing)
+            {
+                d += "flashing";
+            }
+            rez.AppendLine($"at ({army.X,-2},{army.Y,-2}) army {army.Name} {d}");
+        }
+
+        //where!army.IsContained || army.IsFlashing
+
+
+        return rez.ToString();
+    }
+
+    public void RenderOnHearbeat(bool visible)
+    {
+        //race condition here, sometimes we have active unit null, even with a single army and no standing orders
+        var au = ActiveUnit;
+        if (au is null) return;
+        au.SetFlashing(visible);
+        RenderFoggyForArmy(au);
+    }
+
 
 
     public City? FindCity(int x, int y)
@@ -292,7 +372,7 @@ public class Player
                 if (u.StandingOrder != StandingOrders.None)
                 {
                     //armyMoved = await HandleStandingOrders(u, tasks);
-                    armyMoved =HandleStandingOrders(u);
+                    armyMoved = HandleStandingOrders(u);
                 }
                 //logic here is wrong, if we first auto-move unit and then activate if there are still steps left
                 //we never give MainGameLoop chance to create some delay between steps (so that user can actually
@@ -326,6 +406,10 @@ public class Player
                 Debug.Assert(false);
                 //return await app.ExploreStep(u, tasks);
                 break;
+            case StandingOrders.Sentry:
+                return SentryStep(u);
+                break;
+
             default:
                 Debugger.Break(); //unknown standing order
                 break;
@@ -333,19 +417,30 @@ public class Player
         return false;
     }
 
+    private bool SentryStep(IUnit u)
+    {
+        u.StepsAvailable = 0;
+        //Sentry handling should be more complicated than this.  If you activate unit close to the end of turn
+        //it should still have its steps left.  Right now, we will not be able to move it until next turn.
+        //Also true for the armies inside transporters.
+        return true; //senty step handled
+    }
 
 
     public void NewMove()
     {
-        foreach (var u in units)
+        moveNumber += 1;
+        foreach (var unit in units)
         {
-            u.NewTurn();
+            unit.NewTurn();
         }
-        foreach (var c in cities)
+        foreach (var city in cities)
         {
-            c.NewTurn(this);
+            city.NewTurn(this);
         }
     }
+
+    public int MoveNumber => moveNumber;
 
     public void UnitKilled(Army u)
     {
@@ -357,8 +452,8 @@ public class Player
     {
         foreach (var u in units)
         {
-            Debug.Assert(false); //turn on when Trasport is implemented
-            //if (!((u.GetType() == typeof(Transport)) || (y.GetType() == typeof(Carrier)))) continue;
+            //Debug.Assert(false); //turn on when Trasport is implemented
+            if (!((u.GetType() == typeof(Transport)) || (y.GetType() == typeof(Carrier)))) continue;
             if (!((u.X == x) && (u.Y == y))) continue;
             return u;
         }

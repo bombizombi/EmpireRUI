@@ -7,6 +7,8 @@ namespace EmpireRUI;
 
 public class MapViewModel : ReactiveObject, IRoutableViewModel
 {
+    public static int classCount = 0;
+
     private EmpireTheGame empire;
 
     //direct property
@@ -16,14 +18,24 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     private readonly ObservableAsPropertyHelper<string> mapString;
     public string MapString => this.mapString.Value;
 
-
+    private MapViewModel()
+    {
+        classCount++;
+    }
 
     public MapViewModel(IScreen screen, EmpireTheGame e)
     {
+        classCount++;
+        if (classCount > 1) { Debugger.Break(); }
+
         HostScreen = screen;
         empire = e;
 
-        mapString = empire.Players[0].DumpObs.ToProperty(this, x => x.MapString);
+        //mapString = empire.Players[0].DumpObs.ToProperty(this, x => x.MapString);
+        //move to the right thread right before subscribing
+        mapString = empire.Players[0].DumpObs
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.MapString);
 
         confirm = new Interaction<string, Unit>();
 
@@ -36,6 +48,17 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     }
     public string UrlPathSegment { get; } = "Map";
     public IScreen HostScreen { get; }
+
+    private bool loopStarted = false;
+    public async Task MainGameLoopSafe()
+    {
+        if (loopStarted) { return; }
+        loopStarted = true;
+        await MainGameLoop();
+        loopStarted = false;
+    }
+
+
 
     public async Task MainGameLoop()
     {
@@ -58,8 +81,12 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //start interaction
             //send interaction result(game move?) to the game model
 
+            await CheckConqueredCities();
+
+
             //var army = empire.Players[0].ActivateUnit();
             var army = empire.ActivePlayer.ActivateUnit();
+            if(army is not null && army.IsFlashing) { Debugger.Break();  }
             //ActivateUnit will also execute standing orders which means we need some delays to display moves
 
 
@@ -85,7 +112,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //await Observable.Interval(TimeSpan.FromSeconds(1)).Take(2);
 
             gameOver = empire.Players[0].IsDead(); 
-            Debug.WriteLine($"main game loop {count} - gameOver: {gameOver}");
+            Debug.WriteLine($"main game loop {count} - gameOver: {gameOver} move number: {empire.ActivePlayer.MoveNumber}");
             count++;
         } while( !gameOver );
 
@@ -111,6 +138,8 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
     private async Task CheckConqueredCities()
     {
+        //uninitialized cities really don't care what you change or don't change in the dialog
+        //cities that are already producing something should not reset production if the production type was not changed
         var cities = empire.ActivePlayer.GetCities()
             .Where(c => c.production == ProductionEnum.uninitialized);
         foreach (var c in cities)
@@ -121,11 +150,32 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
         }
 
+        var requestsForChange = empire
+            .ActivePlayer.GetCities()
+            .Where(c => c.ChangeRequest);
+
+        foreach (var c in requestsForChange)
+        {
+            c.ChangeRequest = false; 
+            var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+            var rez = await ProductionInteraction.Handle(prod.Production);
+            if( c.production != rez.production)
+            {
+                c.SetProduction((int)rez.production);
+            }
+
+        }
+
         //var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
         //var rez = await ProductionInteraction.Handle(prod.Production);
 
     }
 
+
+    public void HeartBeat(bool visible)
+    {
+        empire.ActivePlayer.RenderOnHearbeat(visible);
+    }
 
 
     public Interaction<string, GameOrder> interactionMove = new(); //property?
