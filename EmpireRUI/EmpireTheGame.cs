@@ -525,7 +525,7 @@ public class EmpireTheGame
             }
             else
             {
-                Debugger.Break();
+                //Debugger.Break();
                 //losing army just dies
             }
             u.Die();  //turns out u.AttackCity already kills the unit
