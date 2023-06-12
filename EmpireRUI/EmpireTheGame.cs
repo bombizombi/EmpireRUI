@@ -149,17 +149,7 @@ public class EmpireTheGame
     {
         var army = Players.First().ActiveUnit; 
         MoveTo(army.X + deltax, army.Y + deltay, army);
-    }
 
-    public void OrderSentry()
-    {
-        var army = ActivePlayer.ActiveUnit;
-        if (army == null) return;
-
-        //tasks.Add(army, Tasks.StopBeingActive);
-        //TODO feedback on sentry
-        army.StandingOrder = StandingOrders.Sentry;
-        army.Sentry();
     }
     public void OrderUnload()
     {
@@ -190,6 +180,9 @@ public class EmpireTheGame
         if (city == null) return;
 
         city.ChangeRequest = true;
+        //city.Production = (city.Production + 1) % 2;
+
+
     }
 
 
@@ -488,22 +481,13 @@ public class EmpireTheGame
             //u.Y = y;
             //u.StepsAvailable -= 1;
             //u.HackMoveAndReduceSteps(x , y ); //bug
-            /*
-            u.EnterCity(); // do not render
             u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
             //hack move also renders 
 
             //Debugger.Break(); //stop here and check who does rendering in this case
             //the city does
             //enter the city
-            u.EnterCity(); //we enter the city too late, its already rendered
-            */
-            MoveTo_Impl(u, x, y);
-
-            u.EnterCity(); // be contained in the city, also lose all movements left
-
-            //now, move all contained units to the city and wake them up
-
+            u.EnterCity();
 
             return true;
         }

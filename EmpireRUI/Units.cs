@@ -46,12 +46,6 @@ public interface IUnit
 
     //22
     public void HackMoveAndReduceSteps(int dx, int dy);
-    void SetFlashing(bool visible);
-    public void ContainBrandNewUnit();
-
-    public bool IsFlashing { get; }
-    public void SetHomeCity(City city);
-    public City HomeCity { get; }
 }
 
 
@@ -256,18 +250,6 @@ public class Army : IUnit
     public virtual int BaseFoggyType => (int)FoggyMap.army;
 
     public static IRandom rnd = new EmpireRandom();
-
-    public virtual bool IsFull => true;
-
-
-    public void SetFlashing( bool visible)
-    {
-        isFlashing = visible;
-        //?RenderFoggyForArmy(au);
-    }
-    public bool IsFlashing => isFlashing;
-    protected bool isFlashing;
-
 
 
 } //end Army

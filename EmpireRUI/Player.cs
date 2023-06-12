@@ -229,15 +229,20 @@ public class Player
             }
 
 
-
-            if (armies.Count() > 2) //check for invalid state
+            armies.ToList().ForEach(x =>
             {
-                string debugStringArmies = DebugDumpArmies(x+dx, y+dy);
-                //Debug.WriteLine(debugStringArmies);
-                //Debug.Assert(false, "trying to draw more than one army at the same spot");
+                if (x.army is Transport)
+                {
+                    //Debugger.Break();
+                }
+
+                tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
+                //git killed my code
+
+                //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
+                //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
             }
-
-
+            );
             //app.Players
 
 
@@ -280,57 +285,6 @@ public class Player
         subjectDump.OnNext(Dump());
         //return changedlocs;
     }
-
-    public string DebugDumpArmies(int x, int y)
-    {
-        var rez = new StringBuilder();
-        //armies from this player
-        foreach (var army in units)
-        {
-            rez.AppendLine($"at ({army.X,2},{army.Y,2}) army {army.Name} ");
-        }
-        //armies from all the players
-
-        rez.AppendLine();
-        rez.AppendLine("now, units from all players");
-        var allArmies = from player in app.Players
-                     from army in player.GetArmies()
-                     where army.X == x  && army.Y == y 
-                     where !army.IsContained || army.IsFlashing
-                     select new { army, player };
-        foreach (var armyObj in allArmies)
-        {
-            var army = armyObj.army;
-            string d = "";
-            if (army.IsContained)
-            {
-                d = "contained ";
-            }
-            if (army.IsFlashing)
-            {
-                d += "flashing";
-            }
-            rez.AppendLine($"at ({army.X,-2},{army.Y,-2}) army {army.Name} {d}");
-        }
-
-        //where!army.IsContained || army.IsFlashing
-
-
-        return rez.ToString();
-    }
-
-    public void RenderOnHearbeat(bool visible)
-    {
-        //race condition here, sometimes we have active unit null, even with a single army and no standing orders
-        var au = ActiveUnit;
-        if (au is null) return;
-        au.SetFlashing(visible);
-
-        //here flashing should get a pipe back out without the delay after
-        RenderFoggyForArmy(au);
-
-    }
-
 
 
     public City? FindCity(int x, int y)
