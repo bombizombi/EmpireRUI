@@ -236,7 +236,7 @@ public class Player
                     //Debugger.Break();
                 }
 
-                tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index)
+            tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
 
                     //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
                     //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
