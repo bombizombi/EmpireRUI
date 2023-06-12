@@ -11,7 +11,6 @@ global using System.Text;
 global using System.Threading.Tasks;
 
 
-
 namespace EmpireRUI;
 
 public class MainViewModel : ReactiveObject, IScreen

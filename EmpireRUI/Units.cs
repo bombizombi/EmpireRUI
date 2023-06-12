@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace EmpireRUI;
+﻿namespace EmpireRUI;
 
 public interface IUnit 
 {
@@ -365,8 +363,9 @@ public class Transport : Army
         {
             //list all the armies in the city
             var armies = player.GetUnitsAtLoc(this.X, this.Y)
-                .Where(a => a.GetType() == typeof(Army) )
-                .Select(a => a as Army);
+                .Where(a => a.GetType() == typeof(Army))
+                .OfType<Army>();
+                //.Select(a => a as Army);  
 
             //all the armies in the city should be contained
             if (armies.Where(a => !a.IsContained).Any())
