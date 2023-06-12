@@ -31,6 +31,7 @@ public interface IUnit
     public void LoadUnit(IUnit u, int x, int y); //this container gets a new passanger unit
     public void UnloadUnit(IUnit u);
     public void Unload();
+    public bool IsFull { get; }
     ////public void Explore();
     public bool ShipContainsUnit(IUnit u);
     public bool IsContained { get; }
@@ -51,9 +52,13 @@ public interface IUnit
     public void ContainBrandNewUnit();
 
     public bool IsFlashing { get; }
+    public void SetHomeCity(City city);
+    public City HomeCity { get; }
 }
 
 
+//add debugger display attribute
+[DebuggerDisplay("{Name} {X},{Y} {StepsAvailable} {Hitpoints} {IsContained")]
 public class Army : IUnit
 {
 
@@ -69,6 +74,8 @@ public class Army : IUnit
     public StandingOrders standingOrder;
     public int targetX, targetY;
     private bool unitIsContained;
+
+    private City homeCity;
 
     public Army(int x, int y, Player p, int stepsLeft=-1, int hitPointsLeft = -1)
     {
@@ -181,7 +188,9 @@ public class Army : IUnit
     public bool AttackCity()
     {
         //armies only?
-        if (rnd.NextDouble() < 0.5)  //TODO configurable probs?
+        var dbl = rnd.NextDouble();
+        Debug.WriteLine($"Attack city, random double = {dbl}" );
+        if (dbl < 0.5)  //TODO configurable probs?
         {
             hitpoints--;
             if (hitpoints == 0)
@@ -206,6 +215,15 @@ public class Army : IUnit
     {
         player.UnitKilled(this);
     }
+
+    public void SetHomeCity(City city)
+    {
+        //used to invoke production dialog on any army
+        homeCity = city;
+    }
+    public City HomeCity => homeCity;
+
+
 
 
 
@@ -240,6 +258,9 @@ public class Army : IUnit
     public virtual int BaseFoggyType => (int)FoggyMap.army;
 
     public static IRandom rnd = new EmpireRandom();
+
+    public virtual bool IsFull => true;
+
 
     public void SetFlashing( bool visible)
     {
@@ -292,6 +313,7 @@ public class Transport : Army
         return false;
     }
 
+
     public override void LoadUnit(IUnit u, int x, int y)
     {
         Debug.Assert(!loadedUnits.Contains(u), "Unit is already inside.");
@@ -305,6 +327,12 @@ public class Transport : Army
         u.LoadContainer();
 
     }
+
+    public override bool IsFull => loadedUnits.Count() >= capacity;
+    
+    
+    
+
     public override void UnloadUnit(IUnit u)
     {
         loadedUnits.Remove(u);
@@ -324,6 +352,46 @@ public class Transport : Army
         //the idea was to force wait on the container ship, and put the volunteer on the top 
         //also, only if land (or a city) is available for the army
     }
+
+//pick up 
+    public override void MoveTo(int x, int y)
+    {
+        //transport should pick up all the armies if it is leaving a city
+
+        City? city = player.FindCity(this.X, this.Y); 
+        bool isCurrentlyInCity = city != null;
+
+        if (isCurrentlyInCity)
+        {
+            //list all the armies in the city
+            var armies = player.GetUnitsAtLoc(this.X, this.Y)
+                .Where(a => a.GetType() == typeof(Army) )
+                .Select(a => a as Army);
+
+            //all the armies in the city should be contained
+            if (armies.Where(a => !a.IsContained).Any())
+            {
+                Debug.Assert(false, "armies in a city, but not contained");
+            }
+
+            //armies.ToList().ForEach(army => this.LoadUnit(army, this.X, this.Y));
+            foreach (var ar in armies.ToList())
+            {
+                if (!IsFull)
+                {
+                    this.LoadUnit(ar, this.X, this.Y);
+                }
+            }
+
+
+        }
+        base.MoveTo(x, y);
+
+    }
+
+
+
+
 
     public override int Capacity() => 6;
     public override int FullHitpoints() => 3;

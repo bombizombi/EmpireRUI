@@ -8,12 +8,14 @@
              xmlns:w="clr-namespace:AutoGrid;assembly=AutoGrid"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <w:AutoGrid  Columns="200,100">
-        <StackPanel Grid.Column="1">
+    <w:AutoGrid Columns="200,200" >
+        <!--<Rectangle Fill="Aqua" />-->
+        <StackPanel HorizontalAlignment="Left">
             <RadioButton Content="Armies" x:Name="Armies" HorizontalAlignment="Center"/>
             <RadioButton Content="Fighters" x:Name="Fighters" HorizontalAlignment="Center"/>
             <RadioButton Content="Transporters" x:Name="Transporters" HorizontalAlignment="Left"/>
             <Button x:Name="btOK" Content="OK" Click="btOK_Click" />
         </StackPanel>
+        <!--<Rectangle Fill="Yellow" Grid.Column="1" />-->
     </w:AutoGrid>
 </local:ProductionViewBase>

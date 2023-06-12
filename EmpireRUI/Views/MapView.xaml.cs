@@ -238,6 +238,12 @@ public partial class MapView : MapViewBase
         var order = new GameOrder(GameOrder.Type.HackChangeCityProduction, -1, -1);
         tempCommands?.OnNext(order); tempCommands?.OnCompleted();
     }
+
+    private void Button_Click_7(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.HackHomeBaseForUnitProduction, -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
 } //end class MapView
 
 

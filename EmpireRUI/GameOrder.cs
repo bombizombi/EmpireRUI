@@ -29,6 +29,7 @@ public class GameOrder
         Sentry,
         Unload,
         UnsentryAll,
-        HackChangeCityProduction
+        HackChangeCityProduction,
+        HackHomeBaseForUnitProduction,
     }
 }

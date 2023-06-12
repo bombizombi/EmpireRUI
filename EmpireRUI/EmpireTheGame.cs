@@ -129,6 +129,9 @@ public class EmpireTheGame
             case GameOrder.Type.HackChangeCityProduction:
                 HackChangeCityProduction();
                 break;
+            case GameOrder.Type.HackHomeBaseForUnitProduction:
+                HackChangeCityProduction();
+                break;
             default:
                 Debug.Assert(false, "unknown game order type");
                 break;
@@ -187,10 +190,16 @@ public class EmpireTheGame
         if (city == null) return;
 
         city.ChangeRequest = true;
-        //city.Production = (city.Production + 1) % 2;
-
-
     }
+
+
+    private void HackHomeBaseProduction()
+    {
+        var city = ActivePlayer.ActivateUnit().HomeCity;
+        if (city == null) return;
+        city.ChangeRequest = true;
+    }
+
 
 
     public void DebugMoveRight()
@@ -275,27 +284,41 @@ public class EmpireTheGame
         if (friend != null) return false; //here we can make some push for room logic?
 
 
-
         //check if it can bombard it
-
 
         //check unit if it likes it
         if (!army.CanStepOn(type)) return false;
 
+        return MoveTo_Impl(army, x, y);
+
+    }
+
+    private bool MoveTo_Impl(IUnit army, int x, int y)
+    {
+        //this will actually do the moving
+        //should be called from normal MoveTo, and from HandleCity
         if (army.StepsAvailable == 0)
         {
             Debug.Assert(false, "why was unit with 0 steps active?");
             return false;
         }
 
-
-
-        //222222222
-
         army.MoveTo(x, y);
+
+        //get army out of the container ship
+        foreach (var sh in ActivePlayer.GetArmies())
+        {
+            if (sh.ShipContainsUnit(army))
+            {
+                sh.UnloadUnit(army);
+                army.Unload();
+                break;
+            }
+        }
 
         return false;
     }
+
 
 #if oldMOVEasdfasd
     public async Task<bool> MoveTo(int x, int y, FeedbackTasks tasks)
@@ -465,7 +488,7 @@ public class EmpireTheGame
             //u.Y = y;
             //u.StepsAvailable -= 1;
             //u.HackMoveAndReduceSteps(x , y ); //bug
-
+            /*
             u.EnterCity(); // do not render
             u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
             //hack move also renders 
@@ -474,6 +497,13 @@ public class EmpireTheGame
             //the city does
             //enter the city
             u.EnterCity(); //we enter the city too late, its already rendered
+            */
+            MoveTo_Impl(u, x, y);
+
+            u.EnterCity(); // be contained in the city, also lose all movements left
+
+            //now, move all contained units to the city and wake them up
+
 
             return true;
         }

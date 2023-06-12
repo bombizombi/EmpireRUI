@@ -34,5 +34,6 @@
         <Button Content="unload" Grid.Row="6" Click="Button_Click_4" />
         <Button Content="open production window for a city with lowest production"
                 Grid.Row="7" Click="Button_Click_6" />
+        <Button Content="home city production" Grid.Row="8" Click="Button_Click_7" />
     </w:AutoGrid>
 </local:MapViewBase>

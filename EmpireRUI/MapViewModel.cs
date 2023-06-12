@@ -57,9 +57,6 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
         await MainGameLoop();
         loopStarted = false;
     }
-
-
-
     public async Task MainGameLoop()
     {
         //this method could belong to the game model

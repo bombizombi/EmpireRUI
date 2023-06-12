@@ -40,7 +40,7 @@ public class City
             //Army a = new Army(x, y, player);
             IUnit a = CreateIUnit(production, player);
 
-            player.AddUnit(a);
+            player.AddUnit(a, this);
 
             //reset production
             remaining = continuingProduction[(int)production];

@@ -312,8 +312,94 @@ public class PlayerTestsCities
 
     }
 
+    [Fact]
+    public void TransportExitingTheCityShouldPickupArmies()
+    {
+        var army = new Army(0, 0, player);
+        player.AddUnit(army);
+        Army.rnd = new RandomForTesting(new double[] { 1 });
+        empire.MoveTo(1, 0, army);
 
+        for (int i = 0; i < 7; i++)
+        {
+            var a = new Army(0, 0, player);
+            player.AddUnit(a);
+            empire.MoveTo(1, 0, a);
+        }
+
+        var trans = new Transport(0, 1, player);
+        player.AddUnit(trans);
+        empire.MoveTo(1, 0, trans); //transporter enters city
+
+        player.NewMove();
+        var party = player.GetUnitsAtLoc(1, 0);
+        Assert.Equal(8, player.GetUnitsAtLoc(1, 0).Count());
+
+        empire.MoveTo(1, 1, trans); //transporter leaves city
+
+        var stillInCity = player.GetUnitsAtLoc(1, 0);
+        var unitsOutside = player.GetUnitsAtLoc(1, 1);
+
+        Assert.Equal(1, stillInCity.Count());
+        Assert.Equal(7, unitsOutside.Count());
+
+    }
 
 }
 
 
+public class TextDumpFlashingTests
+{
+    private EmpireTheGame empire;
+    private Player player;
+    public TextDumpFlashingTests()
+    {
+        string map = """
+                         o#oo
+                         ..o.
+                         ..#o
+                         """;
+        empire = new EmpireTheGame(map, playerCount: 1);
+        player = empire.AddPlayer();
+    }
+
+    [Fact]
+    public void ArmyInCityFlashing()
+    {
+        var army = new Army(0, 0, player);
+        player.AddUnit(army);
+        Army.rnd = new RandomForTesting(new double[] { 1 });
+        empire.MoveTo(1, 0, army); //conquer
+
+        var army2 = new Army(0, 0, player);
+        player.AddUnit(army2);
+        empire.MoveTo(1, 0, army2); //enter city
+
+        player.NewMove(); player.ActivateUnit(); //new move so that activate works
+
+        //cool thing would be to use the TestScheduler here and actually test for timings
+
+        var rezString = player.Dump();
+        var expected1 ="""
+                        o1o 
+                        ..o 
+                            
+                        """ + "\r\n";
+        var expected2 = """
+                        oao 
+                        ..o 
+                            
+                        """ + "\r\n";  //army flashing in the city
+        Assert.Equal( expected1, player.Dump());
+
+        player.RenderOnHearbeat(true);
+        rezString += player.Dump();
+
+        Assert.Equal(expected2, player.Dump());
+
+        //player.RenderOnHearbeat(false);
+        //rezString += player.Dump();
+
+
+    }
+}

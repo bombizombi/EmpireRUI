@@ -131,6 +131,7 @@ public class Player
 
             MapType terrainMap = app.Map.Map[x + dx + (y + dy) * app.Map.SizeX];
             FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
+            FoggyMap terrainMap_Foggy = tileType;  //copy original terrain
             //FoggyMap tileType = (int)app.map.map[x + dx + (y + dy) * app.map.sizeX];
             // - check neutral cities, check opponent cities
             // - check opponent armies
@@ -164,35 +165,79 @@ public class Player
                             where !army.IsContained || army.IsFlashing
                             select new { army, player };
 
-            if (armies.Count() > 1)
+            //there should be at most two armies, one top level container, one contained that is flashing
+
+            if (armies.Count() == 1)
+            {
+                var el = armies.First();
+                Debug.WriteLine($"count is 1: {DebugDumpArmies(x + dx, y + dy)}");
+                tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
+                if (!el.army.IsContained)
+                {
+                    if (el.army.IsFlashing)
+                    {
+                        //tileType = FoggyMap.activeUnitFlasher;  /this will flash "!" and "a"
+                        tileType = terrainMap_Foggy; //this will flash "#" and "a"
+                    }
+                }
+                if (el.army.IsContained)
+                {
+                    if (!el.army.IsFlashing)
+                    {
+                        //tileType = FoggyMap.activeUnitFlasher;  /this will flash "!" and "a"
+                        tileType = terrainMap_Foggy; //this will flash "#" and "a"
+                    }
+                }
+            }
+
+            //this is fine for containers that are trying to unload
+            if (armies.Count() == 2)
+            {
+                Debug.WriteLine($"count is 1: {DebugDumpArmies(x + dx, y + dy)}");
+
+                armies.ToList().ForEach(el =>
+                {
+                    if (el.army is Transport)
+                    {
+                        //Debugger.Break();
+                    }
+
+                    //tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
+
+                    Debug.WriteLine(DebugDumpArmies(x + dx, y + dy));
+
+                    //if (!el.army.IsContained)   //if container
+                    //{
+                    //    if (el.army.IsFlashing)
+                    //    {
+                    //        tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
+
+                    //    }
+                    //}
+                    if (el.army.IsContained)
+                    {
+                        if (el.army.IsFlashing)
+                        {
+                            tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
+                        }
+                    }
+
+
+
+                });
+                //22
+            }
+
+
+
+            if (armies.Count() > 2) //check for invalid state
             {
                 string debugStringArmies = DebugDumpArmies(x+dx, y+dy);
                 //Debug.WriteLine(debugStringArmies);
                 //Debug.Assert(false, "trying to draw more than one army at the same spot");
-                //this is fine for containers that are trying to unload
-
             }
-            //Debug.Assert(armies.Count() <= 1);
-            //this will trigger if we hit the city with more than one unit inside
 
-            armies.ToList().ForEach(x =>
-            {
-                if( x.army is Transport)
-                {
-                    //Debugger.Break();
-                }
 
-                tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
-
-                //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
-                //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
-                //yy
-                if (x.army.IsFlashing)
-                {
-                    tileType = FoggyMap.activeUnitFlasher;
-                }
-
-            });
             //app.Players
 
 
@@ -236,7 +281,7 @@ public class Player
         //return changedlocs;
     }
 
-    private string DebugDumpArmies(int x, int y)
+    public string DebugDumpArmies(int x, int y)
     {
         var rez = new StringBuilder();
         //armies from this player
@@ -280,7 +325,10 @@ public class Player
         var au = ActiveUnit;
         if (au is null) return;
         au.SetFlashing(visible);
+
+        //here flashing should get a pipe back out without the delay after
         RenderFoggyForArmy(au);
+
     }
 
 
@@ -343,8 +391,9 @@ public class Player
     public IObservable<string> DumpObs { get; set; }
 
 
-    public void AddUnit(IUnit army)
+    public void AddUnit(IUnit army, City homeCity=null)
     {
+        army.SetHomeCity(homeCity);
         units.Add(army);
 
         //on adding, armies should reveal fog.  
@@ -450,11 +499,15 @@ public class Player
 
     public IUnit? FriendlyContainerAtLoc(int x, int y)
     {
+        //it should also check if it is not full
         foreach (var u in units)
         {
             //Debug.Assert(false); //turn on when Trasport is implemented
             if (!((u.GetType() == typeof(Transport)) || (y.GetType() == typeof(Carrier)))) continue;
             if (!((u.X == x) && (u.Y == y))) continue;
+
+            if( u.IsFull) continue; //transport is full, cannot load more
+
             return u;
         }
         return null;
@@ -483,6 +536,15 @@ public class Player
     public List<City> GetCities()
     {
         return cities;
+    }
+
+    public IEnumerable<IUnit> GetUnitsAtLoc(int x, int y)
+    {
+        var units =
+            from unit in GetArmies()
+            where unit.X == x && unit.Y == y
+            select unit;
+        return units;
     }
 
     public List<IUnit> Units => GetArmies();
