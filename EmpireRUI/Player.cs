@@ -229,19 +229,19 @@ public class Player
             }
 
 
-            armies.ToList().ForEach(x =>
-            {
-                if( x.army is Transport)
-                {
-                    //Debugger.Break();
-                }
+            //armies.ToList().ForEach(x =>
+            //{
+            //    if( x.army is Transport)
+            //    {
+            //        //Debugger.Break();
+            //    }
 
-            tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
+            //    tileType = (FoggyMap)(x.army.BaseFoggyType + x.player.Index);
 
-                    //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
-                    //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
+            //        //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
+            //        //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
 
-            );
+            //);
             //app.Players
 
 
