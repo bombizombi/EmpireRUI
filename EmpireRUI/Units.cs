@@ -52,6 +52,11 @@ public interface IUnit
     public void ContainBrandNewUnit();
 
     public bool IsFlashing { get; }
+
+    public void SetHomeCity(City city);
+    public City HomeCity { get; }
+
+
 }
 
 
@@ -118,7 +123,6 @@ public class Army : IUnit
 
     }
 
-
     public void Sentry()
     {
         standingOrder = StandingOrders.Sentry;
@@ -126,13 +130,6 @@ public class Army : IUnit
         RenderFoggy();
     }
 
-
-    public void Sentry()
-    {
-        standingOrder = StandingOrders.Sentry;
-        SetFlashing(false);
-        RenderFoggy();
-    }
 
     public void HackMoveAndReduceSteps(int stepX, int stepY)
     {
@@ -267,6 +264,7 @@ public class Army : IUnit
 
     public static IRandom rnd = new EmpireRandom();
 
+    public virtual bool IsFull => true;
     public void SetFlashing( bool visible)
     {
         isFlashing = visible;
@@ -274,7 +272,6 @@ public class Army : IUnit
     }
     public bool IsFlashing => isFlashing;
     protected bool isFlashing;
-
 
 
 } //end Army

@@ -188,7 +188,7 @@ public class Player
                         tileType = terrainMap_Foggy; //this will flash "#" and "a"
                     }
                 }
-            }
+            } // end if 1
 
             //this is fine for containers that are trying to unload
             if (armies.Count() == 2)
@@ -226,7 +226,7 @@ public class Player
 
                 });
                 //22
-            }
+            } //end if 2
 
 
             if (armies.Count() > 1)
@@ -236,7 +236,8 @@ public class Player
                 //Debug.Assert(false, "trying to draw more than one army at the same spot");
                 //this is fine for containers that are trying to unload
 
-            }
+            } //end if count > 1
+
             //Debug.Assert(armies.Count() <= 1);
             //this will trigger if we hit the city with more than one unit inside
 
@@ -260,8 +261,6 @@ public class Player
             });
                 //FoggyMap tileType = FoggyMapElem.ConvertFromTerrain(terrainMap);
                 //tileType = (FoggyMap)((int)FoggyMap.city + playerIndex);
-            }
-            );
             //app.Players
 
 
