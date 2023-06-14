@@ -155,7 +155,10 @@ public class EmpireTheGame
     {
         var army = ActivePlayer.ActiveUnit;
         if (army == null) return;
+        army.StandingOrder = StandingOrders.Sentry;
+        army.Sentry();
     }
+
     public void OrderUnload()
     {
         var army = ActivePlayer.ActiveUnit;
@@ -485,6 +488,7 @@ public class EmpireTheGame
             //u.StepsAvailable -= 1;
             //u.HackMoveAndReduceSteps(x , y ); //bug
 
+            /*
             u.EnterCity(); // do not render
             u.HackMoveAndReduceSteps(x - u.X, y - u.Y);
             //hack move also renders 
@@ -493,6 +497,12 @@ public class EmpireTheGame
             //the city does
             //enter the city
             u.EnterCity(); //we enter the city too late, its already rendered
+            */
+            MoveTo_Impl(u, x, y);
+            u.EnterCity(); // be contained in the city, also lose all movements left
+
+            //now, move all contained units to the city and wake them up
+
 
             return true;
         }

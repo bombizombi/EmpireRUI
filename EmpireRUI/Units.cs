@@ -111,8 +111,6 @@ public class Army : IUnit
 
         MoveContainedUnits(x, y);
 
-        MoveContainedUnits(x, y);
-
         RenderFoggy();
 
         //TODO this code will have to be converted to observables 
@@ -328,6 +326,8 @@ public class Transport : Army
         u.LoadContainer();
 
     }
+    public override bool IsFull => loadedUnits.Count() >= capacity;
+
     public override void UnloadUnit(IUnit u)
     {
         loadedUnits.Remove(u);
@@ -347,6 +347,45 @@ public class Transport : Army
         //the idea was to force wait on the container ship, and put the volunteer on the top 
         //also, only if land (or a city) is available for the army
     }
+
+    //pick up 
+    public override void MoveTo(int x, int y)
+    {
+        //transport should pick up all the armies if it is leaving a city
+
+        City? city = player.FindCity(this.X, this.Y);
+        bool isCurrentlyInCity = city != null;
+
+        if (isCurrentlyInCity)
+        {
+            //list all the armies in the city
+            var armies = player.GetUnitsAtLoc(this.X, this.Y)
+                .Where(a => a.GetType() == typeof(Army))
+                .Select(a => a as Army);
+
+            //all the armies in the city should be contained
+            if (armies.Where(a => !a.IsContained).Any())
+            {
+                Debug.Assert(false, "armies in a city, but not contained");
+            }
+
+            //armies.ToList().ForEach(army => this.LoadUnit(army, this.X, this.Y));
+            foreach (var ar in armies.ToList())
+            {
+                if (!IsFull)
+                {
+                    this.LoadUnit(ar, this.X, this.Y);
+                }
+            }
+
+
+        }
+        base.MoveTo(x, y);
+
+    }
+
+
+
 
     public override int Capacity() => 6;
     public override int FullHitpoints() => 3;

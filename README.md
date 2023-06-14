@@ -183,5 +183,21 @@ Army on normal terrain:              army    terrain
 army in a city:                      city     city
 
 
+copilot is alive:
+
+
+2023-06-11
+
+
+
+
+	
+
+
+	
+	
+
+
+
 
 
