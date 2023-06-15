@@ -18,6 +18,11 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     private readonly ObservableAsPropertyHelper<string> mapString;
     public string MapString => this.mapString.Value;
 
+    private readonly ObservableAsPropertyHelper<string> messageString;
+    public string MessageString => this.messageString.Value;
+
+
+
     private MapViewModel()
     {
         classCount++;
@@ -36,6 +41,10 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
         mapString = empire.Players[0].DumpObs
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, x => x.MapString);
+
+        messageString = empire.Players[0].MessageObs
+            //.ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, x => x.MessageString);
 
         confirm = new Interaction<string, Unit>();
 
@@ -81,9 +90,9 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             await CheckConqueredCities();
 
 
-            //var army = empire.Players[0].ActivateUnit();
             var army = empire.ActivePlayer.ActivateUnit();
             if(army is not null && army.IsFlashing) { Debugger.Break();  }
+            //if (army?.IsFlashing) { Debugger.Break(); }
             //ActivateUnit will also execute standing orders which means we need some delays to display moves
 
 
@@ -133,6 +142,8 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
     }
 
+    private IDisposable dummySolution;
+
     private async Task CheckConqueredCities()
     {
         //uninitialized cities really don't care what you change or don't change in the dialog
@@ -146,22 +157,93 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             c.SetProduction( (int)rez.production);
 
         }
+        City ccontext = null;
+
+        empire
+            .ActivePlayer.GetCities()
+            .Where(c => c.ChangeRequest)
+            .ToObservable()
+
+            .Subscribe(x => Debug.WriteLine($"333sub: {x}"));
+
+        if( dummySolution is not null)
+        {
+            dummySolution.Dispose();
+            dummySolution = null;
+        }
+
+        var seeType1 = empire
+            .ActivePlayer.GetCities()
+            .Where(c => c.ChangeRequest)
+            .ToObservable()
+            .Select(city => Observable.Defer(() =>
+            {
+                Debug.WriteLine($"11a production for city {city}");
+                ccontext = city;
+                city.ChangeRequest = false;
+                Debug.WriteLine($"11b production for city {city}");
+                var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+                Debug.WriteLine($"11c production for city {city}");
+                return ProductionInteraction.Handle(prod.Production);
+            }));
+        var seeType2 = empire
+            .ActivePlayer.GetCities()
+            .Where(c => c.ChangeRequest)
+            .ToObservable()
+            .Select(city => Observable.Defer(() =>
+            {
+                Debug.WriteLine($"11a production for city {city}");
+                ccontext = city;
+                city.ChangeRequest = false;
+                Debug.WriteLine($"11b production for city {city}");
+                var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+                Debug.WriteLine($"11c production for city {city}");
+                return ProductionInteraction.Handle(prod.Production);
+            }))
+            .Concat();
+
+
 
         var requestsForChange = empire
             .ActivePlayer.GetCities()
-            .Where(c => c.ChangeRequest);
+            .Where(c => c.ChangeRequest)
+            .ToObservable()
+            .Select(city => Observable.Defer(() =>
+            {
+                Debug.WriteLine($"11a production for city {city}");
+                ccontext = city;
+                city.ChangeRequest = false;
+                Debug.WriteLine($"11b production for city {city}");
+                var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
+                Debug.WriteLine($"11c production for city {city}");
+                return ProductionInteraction.Handle(prod.Production);
+            }))
+            .Concat()
+            .Do(prod =>
+            {
+                ccontext.SetProduction((int)prod.production);
+                Debug.WriteLine($"22 production for city {ccontext} p: {prod.production}");
+            })
+            .Subscribe(x => Debug.WriteLine($"sub: {x}"));
 
+        dummySolution = requestsForChange;
+
+        /* this is the original code that worked just fine
+        var requestsForChange = empire
+            .ActivePlayer.GetCities()
+            .Where(c => c.ChangeRequest);
         foreach (var c in requestsForChange)
         {
-            c.ChangeRequest = false; 
+            c.ChangeRequest = false;
             var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
             var rez = await ProductionInteraction.Handle(prod.Production);
-            if( c.production != rez.production)
+            if (c.production != rez.production)
             {
                 c.SetProduction((int)rez.production);
             }
+        }*/
 
-        }
+
 
         //var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
         //var rez = await ProductionInteraction.Handle(prod.Production);
@@ -192,8 +274,8 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     public Interaction<string, Unit> Confirm => confirm;
 
 
-    private Interaction<ProductionData, ProductionData> productionInteraction = new Interaction<ProductionData, ProductionData>();
-    public Interaction<ProductionData, ProductionData> ProductionInteraction => productionInteraction;
+    private MyInteraction<ProductionData, ProductionData> productionInteraction = new MyInteraction<ProductionData, ProductionData>();
+    public MyInteraction<ProductionData, ProductionData> ProductionInteraction => productionInteraction;
 
 
     } // end class MapView Model

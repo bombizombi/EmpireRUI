@@ -13,6 +13,8 @@ public interface IUnit
 
     public void MoveTo(int x, int y);
     public void Sentry();
+    public void SkipMove();
+
 
     public void NewTurn();
     public StandingOrders StandingOrder { get; set; }
@@ -56,7 +58,7 @@ public interface IUnit
     public void SetHomeCity(City city);
     public City HomeCity { get; }
 
-
+    public string DisplayActivationMessage { get; }
 }
 
 
@@ -127,6 +129,12 @@ public class Army : IUnit
         SetFlashing(false);
         RenderFoggy();
     }
+
+    public void SkipMove()
+    {
+        stepsAvailable = 0;
+    }
+
 
 
     public void HackMoveAndReduceSteps(int stepX, int stepY)
@@ -271,6 +279,10 @@ public class Army : IUnit
     public bool IsFlashing => isFlashing;
     protected bool isFlashing;
 
+    public virtual string DisplayActivationMessage => $"army {Name} active.";
+
+
+
 
 } //end Army
 
@@ -396,15 +408,26 @@ public class Transport : Army
 
     public override bool CanStepOn(MapType type) => type == MapType.sea;
 
-    public bool CanAttackIt(int type)
+
+    //public virtual bool CanAttackIt(int type)
+    public override bool CanAttackIt(MapType type)
     {
-        return type == 1; //TODO blah, enum needed
-                          //
+        //if opponents city, no
+        if ( type == MapType.city) return false; //only armies can attack cities
+
+        //if own, can't
+        //if opponents unit, perhaps
+        return false;
+
     }
     //public override FoggyMap GetUnitType()
     //{ //this was used from the GUI rendering code
     //    return FoggyMap.transport;
     //}
+
+
+    public override string DisplayActivationMessage 
+        => $"Transporter {Name} active, carrying {loadedUnits.Count()} armies.";
 
 
 

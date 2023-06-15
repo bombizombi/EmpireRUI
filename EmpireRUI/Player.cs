@@ -15,8 +15,16 @@ public class Player
     public FoggyMapElem[,] map;
 
     private BehaviorSubject<string> subjectDump;
+    private BehaviorSubject<string> subjectMessage;
 
     public int Index;
+
+    public bool testDead = false;
+
+
+    public IObservable<string> DumpObs { get; set; }
+    public IObservable<string> MessageObs { get; set; }
+
 
     public Player(EmpireTheGame app)
     {
@@ -49,9 +57,12 @@ public class Player
             //.ObserveOn(RxApp.MainThreadScheduler)
             ;
         //DumpObs = subjectDump.AsObservable(); //this will put nondelayed obs as public
-        DumpObs = slowDump;
 
+        DumpObs = slowDump;
         //expose normal dump as well for testing
+
+        subjectMessage = new BehaviorSubject<string>("");
+        MessageObs = subjectMessage.AsObservable();
     }
 
 
@@ -171,7 +182,7 @@ public class Player
             if (armies.Count() == 1)
             {
                 var el = armies.First();
-                Debug.WriteLine($"count is 1: {DebugDumpArmies(x + dx, y + dy)}");
+                //Debug.WriteLine($"count is 1: {DebugDumpArmies(x + dx, y + dy)}");
                 tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
                 if (!el.army.IsContained)
                 {
@@ -339,7 +350,7 @@ public class Player
         if (armies.Count() == 1)
         {
             var el = armies.First();
-            Debug.WriteLine($"count is 1: {DebugDumpArmies(x, y)}");
+            //Debug.WriteLine($"count is 1: {DebugDumpArmies(x, y)}");
             tileType = (FoggyMap)(el.army.BaseFoggyType + el.player.Index);
             if (!el.army.IsContained)
             {
@@ -362,7 +373,7 @@ public class Player
         //this is fine for containers that are trying to unload
         if (armies.Count() == 2)
         {
-            Debug.WriteLine($"count is 1: {DebugDumpArmies(x, y)}");
+            //Debug.WriteLine($"count is 1: {DebugDumpArmies(x, y)}");
 
             armies.ToList().ForEach(el =>
             {
@@ -532,11 +543,11 @@ public class Player
 
     internal bool IsDead()
     {
+        if (testDead) return true;
         return (!GetArmies().Any()) && (!GetCities().Any());
         //return true; //player dead
     }
 
-    public IObservable<string> DumpObs { get; set; }
 
 
     public void AddUnit(IUnit army, City homeCity=null)
@@ -570,13 +581,17 @@ public class Player
                 {
                     //armyMoved = await HandleStandingOrders(u, tasks);
                     armyMoved = HandleStandingOrders(u);
+                    subjectMessage.OnNext($"army {u.Name} executing standing order.");
                 }
                 //logic here is wrong, if we first auto-move unit and then activate if there are still steps left
                 //we never give MainGameLoop chance to create some delay between steps (so that user can actually
                 //see what is happening)
+
                 if (!armyMoved && (u != ignore))
                 {
                     ActiveUnit = u;
+                    //subjectMessage.OnNext($"army {u.Name} active.");
+                    subjectMessage.OnNext(u.DisplayActivationMessage);
                     break;
                 }
             }
@@ -693,6 +708,13 @@ public class Player
             where unit.X == x && unit.Y == y
             select unit;
         return units;
+    }
+
+    internal void Wait(IUnit armyToWait)
+    {
+        Debug.Assert(units.Contains(armyToWait), "Army to wait not in the list");
+        units.Remove(armyToWait);
+        units.Add(armyToWait);
     }
 
     public List<IUnit> Units => GetArmies();

@@ -27,9 +27,13 @@ public class GameOrder
         Move,
         LongMove,
         Sentry,
+        Load,
         Unload,
         UnsentryAll,
+        SkipMove,
+        Wait,
         HackChangeCityProduction,
         HackHomeBaseForUnitProduction,
+        TestEndGame,
     }
 }

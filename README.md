@@ -182,11 +182,20 @@ Who flashes what and when: flashing:   0        1
 Army on normal terrain:              army    terrain
 army in a city:                      city     city
 
+2023-06-14
 
-copilot is alive:
++transports should not attack cities
++active unit message somewhere (Transport no 1, with 6 armies...)
+-message in a city makes no sense
++skip turn (space)
++wait (w)
++sentry (s) just the shortcut
+-load transport
+-smarter unload, do not activate in the middle of the sea
+-diagnal movement
+-trans unload should also do wait
+-messages about standing orders go in sync with actual movements, so they go off too fast
 
-
-2023-06-11
 
 
 

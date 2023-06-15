@@ -256,7 +256,7 @@ public class PlayerTestsCities
         Assert.Equal(expectedFoggyMapString, result);
         Assert.Equal(1, count);
 
-        
+
         var army2 = new Army(2, 1, player);
         player.AddUnit(army2);
         empire.MoveTo(1, 0, army2);
@@ -272,7 +272,7 @@ public class PlayerTestsCities
     {
         var army = new Army(0, 0, player);
         player.AddUnit(army);
-        var trans = new Transport(0,1,player);
+        var trans = new Transport(0, 1, player);
         player.AddUnit(trans);
 
         Army.rnd = new RandomForTesting(new double[] { 1 });
@@ -345,10 +345,33 @@ public class PlayerTestsCities
 
     }
 
+    [Fact]
+    public void TransportShouldNotAttackCities()
+    {
+
+        //o#oo
+        //..o.
+        //..#o
+
+        var tr = new Transport(1, 1, player);
+        player.AddUnit(tr);
+        empire.MoveTo(2, 2,tr); //attack city
+
+        string expectedFoggyMapString = """
+                         o#o 
+                         .to 
+                         ..# 
+                         """ + "\r\n";
+
+        Assert.Equal(expectedFoggyMapString, empire.Players.First().Dump());
+
+
+    }
 }
 
 
-public class TextDumpFlashingTests
+
+    public class TextDumpFlashingTests
 {
     private EmpireTheGame empire;
     private Player player;
@@ -381,25 +404,83 @@ public class TextDumpFlashingTests
 
         var rezString = player.Dump();
         var expected1 ="""
-                        o1o 
+                        oao 
                         ..o 
                             
                         """ + "\r\n";
         var expected2 = """
-                        oao 
+                        o1o 
                         ..o 
                             
                         """ + "\r\n";  //army flashing in the city
         Assert.Equal( expected1, player.Dump());
 
-        player.RenderOnHearbeat(true);
+        player.RenderOnHearbeat(false);
         rezString += player.Dump();
 
         Assert.Equal(expected2, player.Dump());
 
-        //player.RenderOnHearbeat(false);
+        //player.RenderOnHearbeat(true);
         //rezString += player.Dump();
 
 
     }
+
+    [Fact]
+    public void TransporterLoadAsAStandingOrderTest()
+    {
+        Army.rnd = new RandomForTesting(new double[] { 1 });
+        //create armies in the city
+        for (int i = 0; i < 7; i++)
+        {
+            var armyN = new Army(2, 0, player);
+            player.AddUnit(armyN);
+            empire.MoveTo(1, 0, armyN);
+        }
+
+        var transp = new Transport(1, 1, player);
+
+        //var router = new Router
+        //var mockScreen = new ReactiveUI.Benchmarks.MockHostScreen(); 
+        var mapVM = new MapViewModel(null, empire);
+
+        var fakeMoves = new GameOrder[]
+        {
+            new GameOrder(GameOrder.Type.Load, -1,-1),
+
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+
+            new GameOrder(GameOrder.Type.TestEndGame, -1,-1),
+        };
+
+        mapVM.interactionMove.RegisterHandler(interaction =>  {
+            interaction.SetOutput(fakeMoves[0]);
+            fakeMoves = fakeMoves.Skip(1).ToArray();
+        });
+        mapVM.ProductionInteraction.RegisterHandler(interaction => {
+            interaction.SetOutput(new ProductionData());
+        });
+
+
+        mapVM.MainGameLoop();
+
+
+        var army = new Army(0, 0, player);
+        player.AddUnit(army);
+        Army.rnd = new RandomForTesting(new double[] { 1 });
+        empire.MoveTo(1, 0, army); //conquer
+
+
+
+
+    }
+
+
+
 }

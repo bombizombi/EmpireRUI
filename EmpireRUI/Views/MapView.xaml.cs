@@ -36,6 +36,10 @@ public partial class MapView : MapViewBase
                     this.tbMessages.Focus();
 
                     this
+                        .OneWayBind(this.ViewModel, vm => vm.MessageString, v => v.tbMessages.Text)
+                        .DisposeWith(disposables);
+
+                    this
                         .OneWayBind(this.ViewModel, vm => vm.MapString, v => v.tbMap.Text)
                         .DisposeWith(disposables);
 
@@ -80,7 +84,7 @@ public partial class MapView : MapViewBase
 
     private Subject<GameOrder>? tempCommands = new Subject<GameOrder>();
 
-    private async Task GameLoopInteractionHandler(InteractionContext<string, GameOrder> interaction)
+    private async Task GameLoopInteractionHandler(ReactiveUI.InteractionContext<string, GameOrder> interaction)
     {
         MapViewModel vm = ViewModel;
 
@@ -132,7 +136,11 @@ public partial class MapView : MapViewBase
         GameOrder order = new GameOrder(GameOrder.Type.Move, (int)p.X, (int)p.Y);
         tempCommands?.OnNext(order);
         tempCommands?.OnCompleted();
-
+    }
+    private void PostCommand(GameOrder order)
+    {
+        tempCommands?.OnNext(order);
+        tempCommands?.OnCompleted();
     }
 
 
@@ -183,6 +191,12 @@ public partial class MapView : MapViewBase
 
         //diagonals?
 
+        //shortcuts
+        //handle space
+        var spaceDowns = keyDowns.Where(k => k.EventArgs.Key == Key.Space); //skip
+        var wDowns = keyDowns.Where(k => k.EventArgs.Key == Key.N); //wait
+        var sDowns = keyDowns.Where(k => k.EventArgs.Key == Key.S); //sentry
+
 
         var viewModel = DataContext as MapViewModel;
         velocity
@@ -196,7 +210,16 @@ public partial class MapView : MapViewBase
             }
              );
 
+        var multipleCommands =
+            spaceDowns.Select(_ => new GameOrder(GameOrder.Type.SkipMove, -1, -1))
+                .Merge(wDowns.Select(_ => new GameOrder(GameOrder.Type.Wait, -1, -1)))
+                .Merge(sDowns.Select(_ => new GameOrder(GameOrder.Type.Sentry, -1, -1)));
 
+        multipleCommands.Subscribe(or =>
+        {
+            Debug.WriteLine("posting order: " + or.ToString());
+            this.PostCommand(or);
+        });
         //rotatesDowns.Subscribe(_ => viewModel.RotateBlock());
         //dropsDowns.Subscribe(_ => viewModel.DropBlock());
     }

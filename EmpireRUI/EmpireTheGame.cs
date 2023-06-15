@@ -132,6 +132,15 @@ public class EmpireTheGame
             case GameOrder.Type.HackHomeBaseForUnitProduction:
                 HackChangeCityProduction();
                 break;
+            case GameOrder.Type.SkipMove:
+                OrderSkipMove();
+                break;
+            case GameOrder.Type.Wait:
+                OrderWait();
+                break;
+            case GameOrder.Type.TestEndGame:
+                ActivePlayer.testDead = true;
+                break;
             default:
                 Debug.Assert(false, "unknown game order type");
                 break;
@@ -174,6 +183,41 @@ public class EmpireTheGame
                 army.StandingOrder = StandingOrders.None;
             }
         }
+    }
+
+    private void OrderSkipMove()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+        army.SkipMove();
+    }
+    private void OrderWait()
+    {
+        /* this worked fine in the old async model
+        var armyToWait = ActivePlayer.ActiveUnit;
+        //try to activate somebody else
+        IUnit next = ActivePlayer.ActivateUnit(armyToWait);
+        if (next == null)
+        {
+            ActivePlayer.ActiveUnit = armyToWait; //looks like this is the onl one left to move
+        }*/
+
+        //now, every order is a new game loop, and we activate at each loop
+        //so, put this unit at the end of the list
+        var armyToWait = ActivePlayer.ActiveUnit;
+        //try to activate somebody else
+        IUnit next = ActivePlayer.ActivateUnit(armyToWait);
+        if (next == null)
+        {
+            return;  //there is nobody else in the queue, nothing to do
+            //ActivePlayer.ActiveUnit = armyToWait; //looks like this is the onl one left to move
+        }
+        //move this unit to the end of the queue
+        ActivePlayer.Wait(armyToWait);
+        
+
+
+
     }
 
     private void HackChangeCityProduction()
