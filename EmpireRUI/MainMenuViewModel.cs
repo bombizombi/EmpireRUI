@@ -37,7 +37,7 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
         player.AddUnit( army);
 
         //debug create standing orders
-        army.DebugCreateStandingOrder(StandingOrders.LongGoto, 10, 0);
+        army.CreateStandingOrder(StandingOrders.LongGoto, 10, 0);
         player.AddUnit(new Army(1, 1, player));
 
         Army.rnd = new RandomForTesting(new double[] { 1, 1 }); //always win

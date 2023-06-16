@@ -98,12 +98,12 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
             if ( army is not null)
             {
-                Debug.WriteLine($"Activated army {army.Name} at {army.X},{army.Y}.");
+                //Debug.WriteLine($"Activated army {army.Name} at {army.X},{army.Y}.");
 
 
-                Debug.WriteLine($"before requesting interaction {count}. ");
+                //Debug.WriteLine($"before requesting interaction {count}. ");
                 var tempMove2 = await interactionMove.Handle("");
-                Debug.WriteLine("tempCommands: " + tempMove2.ToString());
+                //Debug.WriteLine("tempCommands: " + tempMove2.ToString());
 
                 empire.GameMove(tempMove2);
                 await CheckConqueredCities();
@@ -118,19 +118,20 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             //await Observable.Interval(TimeSpan.FromSeconds(1)).Take(2);
 
             gameOver = empire.Players[0].IsDead(); 
-            Debug.WriteLine($"main game loop {count} - gameOver: {gameOver} move number: {empire.ActivePlayer.MoveNumber}");
+            //Debug.WriteLine($"main game loop {count} - gameOver: {gameOver} move number: {empire.ActivePlayer.MoveNumber}");
             count++;
         } while( !gameOver );
 
 
-        var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
-        var rez = await ProductionInteraction.Handle(prod.Production);
-
+        ProductionData? rez;
+        using (var prod = new ProductionViewModel(HostScreen, new ProductionData(), this))
+        {
+            rez = await ProductionInteraction.Handle(prod.Production);
+        }
 
         //-loop while there are still units with steps left
 
         //execute simple interaction 
-
         await confirm.Handle(rez.production.ToString());
 
         //move to gameover screen
@@ -152,11 +153,21 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             .Where(c => c.production == ProductionEnum.uninitialized);
         foreach (var c in cities)
         {
-            var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
-            var rez = await ProductionInteraction.Handle(prod.Production);
-            c.SetProduction( (int)rez.production);
+            ProductionData? result;
+            using (var prod = new ProductionViewModel(HostScreen, new ProductionData(), this))
+            { 
+                Debug.WriteLine($"11f Before starting Interaction.Handle: ");
+                result = await ProductionInteraction.Handle(prod.Production);
+            }
+            Debug.WriteLine($"11g After await production.Handle rez is {result.production} ");
+            c.SetProduction( (int)result.production);
 
         }
+
+
+
+        /*
+
         City ccontext = null;
 
         empire
@@ -210,38 +221,47 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
             .ToObservable()
             .Select(city => Observable.Defer(() =>
             {
-                Debug.WriteLine($"11a production for city {city}");
+                //Debug.WriteLine($"11a production for city {city}");
                 ccontext = city;
                 city.ChangeRequest = false;
-                Debug.WriteLine($"11b production for city {city}");
+                //Debug.WriteLine($"11b production for city {city}");
                 var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
-                Debug.WriteLine($"11c production for city {city}");
+                //Debug.WriteLine($"11c production for city {city}");
                 return ProductionInteraction.Handle(prod.Production);
             }))
             .Concat()
             .Do(prod =>
             {
                 ccontext.SetProduction((int)prod.production);
-                Debug.WriteLine($"22 production for city {ccontext} p: {prod.production}");
+                //Debug.WriteLine($"22 production for city {ccontext} p: {prod.production}");
             })
             .Subscribe(x => Debug.WriteLine($"sub: {x}"));
 
+        //Task.Delay(2000).Wait();
+
         dummySolution = requestsForChange;
 
-        /* this is the original code that worked just fine
+        Debug.WriteLine($"check conquered cities, at the end {ccontext} qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
+
+        */
+
+         //this is the original code that worked just fine
         var requestsForChange = empire
             .ActivePlayer.GetCities()
             .Where(c => c.ChangeRequest);
         foreach (var c in requestsForChange)
         {
             c.ChangeRequest = false;
-            var prod = new ProductionViewModel(HostScreen, new ProductionData(), this);
-            var rez = await ProductionInteraction.Handle(prod.Production);
-            if (c.production != rez.production)
+            ProductionData? result;
+            using (var prod = new ProductionViewModel(HostScreen, new ProductionData(), this))
             {
-                c.SetProduction((int)rez.production);
+                result = await ProductionInteraction.Handle(prod.Production);
             }
-        }*/
+            if (c.production != result.production)
+            {
+                c.SetProduction((int)result.production);
+            }
+        }
 
 
 
@@ -274,7 +294,8 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     public Interaction<string, Unit> Confirm => confirm;
 
 
-    private MyInteraction<ProductionData, ProductionData> productionInteraction = new MyInteraction<ProductionData, ProductionData>();
+    //private MyInteraction<ProductionData, ProductionData> productionInteraction = new MyInteraction<ProductionData, ProductionData>();
+    private MyInteraction<ProductionData, ProductionData> productionInteraction = new();
     public MyInteraction<ProductionData, ProductionData> ProductionInteraction => productionInteraction;
 
 

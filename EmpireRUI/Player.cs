@@ -580,6 +580,8 @@ public class Player
                 if (u.StandingOrder != StandingOrders.None)
                 {
                     //armyMoved = await HandleStandingOrders(u, tasks);
+                    //armyMoved could also be called "are all steps spent?"
+                    //                               "is transporter fully loaded with steps left? -but opposite"
                     armyMoved = HandleStandingOrders(u);
                     subjectMessage.OnNext($"army {u.Name} executing standing order.");
                 }
@@ -587,7 +589,7 @@ public class Player
                 //we never give MainGameLoop chance to create some delay between steps (so that user can actually
                 //see what is happening)
 
-                if (!armyMoved && (u != ignore))
+                if (!armyMoved && (u != ignore)) // if not all steps spent
                 {
                     ActiveUnit = u;
                     //subjectMessage.OnNext($"army {u.Name} active.");
@@ -621,7 +623,9 @@ public class Player
             case StandingOrders.Sentry:
                 return SentryStep(u);
                 break;
-
+            case StandingOrders.Load:
+                return app.LoadStep(u);
+                break;
             default:
                 Debugger.Break(); //unknown standing order
                 break;

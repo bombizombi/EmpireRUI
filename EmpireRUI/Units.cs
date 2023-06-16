@@ -2,7 +2,7 @@
 
 namespace EmpireRUI;
 
-public interface IUnit 
+public interface IUnit
 {
     public int X { get; set; }
     public int Y { get; set; }
@@ -14,6 +14,7 @@ public interface IUnit
     public void MoveTo(int x, int y);
     public void Sentry();
     public void SkipMove();
+    public void CreateStandingOrder(StandingOrders o, int x, int y);
 
 
     public void NewTurn();
@@ -24,6 +25,7 @@ public interface IUnit
 
     //public bool IsVisible();
     public bool CanAttackIt(MapType type);
+    public bool CanPickUp(IUnit? unit);
     public bool CanStepOn(MapType type);
     //public bool IsInSentry();
 
@@ -33,10 +35,14 @@ public interface IUnit
     public void LoadUnit(IUnit u, int x, int y); //this container gets a new passanger unit
     public void UnloadUnit(IUnit u);
     public void Unload();
+    public void Load();
     public bool IsFull { get; }
     ////public void Explore();
     public bool ShipContainsUnit(IUnit u);
     public bool IsContained { get; }
+
+    public int LoadedUnitsCount { get; }
+    public int Capacity{ get; }
 
     //public List<Loc> RenderFoggy();
     public void RenderFoggy();
@@ -176,6 +182,8 @@ public class Army : IUnit
     }
 
     public virtual void Unload() { }
+    public virtual void Load() { }
+
 
     public bool IsContained => unitIsContained;
 
@@ -188,12 +196,18 @@ public class Army : IUnit
     public void RenderFoggy()
     {
         //might return true if something of interest was discovered
-        Debug.WriteLine("render foggy for army");
+        //Debug.WriteLine("render foggy for army");
         this.player.RenderFoggyForArmy(this);
     }
     public virtual bool CanStepOn(MapType type) => type == MapType.land;
 
     public virtual bool CanAttackIt(MapType type) => type == MapType.city; //lol, we can attack more
+
+    public virtual bool CanPickUp(IUnit? unit)
+    {
+        Debug.Assert( false, "An army is not a container");
+        return false;
+    }
 
 
     public bool AttackCity()
@@ -241,18 +255,15 @@ public class Army : IUnit
     protected static int count = 0;
     public virtual int FullHitpoints() => 1;
     public virtual int FullSteps() => 1;
-    public virtual int Capacity() => 0;
+    public virtual int Capacity => 0;
+    public virtual int LoadedUnitsCount => 0;
 
 
-
-
-
-    internal void DebugCreateStandingOrder(StandingOrders order, int tx, int ty)
+    public virtual void CreateStandingOrder(StandingOrders order, int tx, int ty)
     {
         standingOrder = order;
         targetX = tx;
         targetY = ty;
-
     }
 
     public int X { get { return x; } set { x = value; } }
@@ -265,6 +276,7 @@ public class Army : IUnit
 
     public int StepsAvailable { get { return stepsAvailable;  } set { stepsAvailable = value; } }
     public int Hitpoints => hitpoints;
+
 
     public virtual int BaseFoggyType => (int)FoggyMap.army;
 
@@ -295,14 +307,14 @@ public class Transport : Army
     private int capacity;
     //private int loaded;
 
-    private List<IUnit> loadedUnits;
+    public List<IUnit> loadedUnits;
 
     public Transport(int x, int y, Player p) : base(x, y, p)
     {
 
         name = "Transport no " + Army.count;
 
-        capacity = Capacity();
+        capacity = Capacity;
         loadedUnits = new List<IUnit>();
 
     }
@@ -360,6 +372,17 @@ public class Transport : Army
         //also, only if land (or a city) is available for the army
     }
 
+    public override void Load()
+    {
+        //look around the ship, set their standing order to LongMoveTo my location
+
+        this.standingOrder = StandingOrders.Load;
+        //standing order step
+
+
+    }
+
+
     //pick up 
     public override void MoveTo(int x, int y)
     {
@@ -399,7 +422,10 @@ public class Transport : Army
 
 
 
-    public override int Capacity() => 6;
+    public override int Capacity => 6; //change with dmg 
+    public override int LoadedUnitsCount => loadedUnits.Count();
+
+
     public override int FullHitpoints() => 3;
 
     public override int FullSteps() => 2;
@@ -424,6 +450,13 @@ public class Transport : Army
     //{ //this was used from the GUI rendering code
     //    return FoggyMap.transport;
     //}
+
+    public override bool CanPickUp(IUnit? unit)
+    {
+        if (unit is null) return false;
+        return unit.GetType() == typeof(Army);
+    }
+
 
 
     public override string DisplayActivationMessage 
@@ -485,6 +518,7 @@ public enum StandingOrders
     LongGoto,
     Sentry,
     Explore,
+    Load,
 }
 
 

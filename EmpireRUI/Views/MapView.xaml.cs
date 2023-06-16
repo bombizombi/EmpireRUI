@@ -213,7 +213,8 @@ public partial class MapView : MapViewBase
         var multipleCommands =
             spaceDowns.Select(_ => new GameOrder(GameOrder.Type.SkipMove, -1, -1))
                 .Merge(wDowns.Select(_ => new GameOrder(GameOrder.Type.Wait, -1, -1)))
-                .Merge(sDowns.Select(_ => new GameOrder(GameOrder.Type.Sentry, -1, -1)));
+                .Merge(sDowns.Select(_ => new GameOrder(GameOrder.Type.Sentry, -1, -1)))
+                .Merge(keyDowns.Where(k => k.EventArgs.Key == Key.L).Select(_ => new GameOrder(GameOrder.Type.Load, -1, -1)));
 
         multipleCommands.Subscribe(or =>
         {
@@ -265,6 +266,12 @@ public partial class MapView : MapViewBase
     private void Button_Click_7(object sender, RoutedEventArgs e)
     {
         var order = new GameOrder(GameOrder.Type.HackHomeBaseForUnitProduction, -1, -1);
+        tempCommands?.OnNext(order); tempCommands?.OnCompleted();
+    }
+
+    private void Button_Click_8(object sender, RoutedEventArgs e)
+    {
+        var order = new GameOrder(GameOrder.Type.Load, -1, -1);
         tempCommands?.OnNext(order); tempCommands?.OnCompleted();
     }
 } //end class MapView

@@ -76,7 +76,7 @@ public class MyInteraction<TInput, TOutput> //: Interaction<TInput, TOutput>
     {
         var context = new MyInteractionContext<TInput, TOutput>(input);
 
-
+#if PLAYgroundasdasdf
         // start playg
 
 
@@ -151,6 +151,7 @@ public class MyInteraction<TInput, TOutput> //: Interaction<TInput, TOutput>
 
 
         // end playground
+#endif
 
         return GetHandlers()
                //.Reverse()      //the point of MyInteraction
@@ -161,7 +162,6 @@ public class MyInteraction<TInput, TOutput> //: Interaction<TInput, TOutput>
                .TakeWhile(_ => !context.IsHandled)
                .IgnoreElements()
                .Select(xxx => {
-                   Debug.WriteLine("Select {xxx} PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP");
                    return default(TOutput)!;
                    })
                .Concat(

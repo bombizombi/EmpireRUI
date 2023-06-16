@@ -120,6 +120,9 @@ public class EmpireTheGame
             case GameOrder.Type.Sentry:
                 OrderSentry();
                 break;
+            case GameOrder.Type.Load:
+                OrderLoad();
+                break;
             case GameOrder.Type.Unload:
                 OrderUnload();
                 break;
@@ -166,6 +169,13 @@ public class EmpireTheGame
         if (army == null) return;
         army.StandingOrder = StandingOrders.Sentry;
         army.Sentry();
+    }
+
+    public void OrderLoad()
+    {
+        var army = ActivePlayer.ActiveUnit;
+        if (army == null) return;
+        army.Load();
     }
 
     public void OrderUnload()
@@ -520,6 +530,7 @@ public class EmpireTheGame
 
     private bool Move_HandleCity(IUnit u, int x, int y)
     {
+        //here, (x,y) should already be a city, either ours or enemy of neutral
         //return value not used before
 
 
@@ -665,10 +676,97 @@ public class EmpireTheGame
 
     }
 
+    public bool LoadStep(IUnit transporter)
+    {
+        //suck all the armies into the transporter
+        //even from the cities, but not from the friendly other transports
+
+        if( transporter.IsFull)
+        {
+            transporter.StandingOrder = StandingOrders.None;
+            return false;
+        }
+
+        IUnit unit;
+        List<IUnit> unitsTouched = new();
+        do
+        {
+            unit = LoadStep_PickupAroundMe(transporter);
+            if (unit is not null)
+            {
+                unitsTouched.Add(unit);
+            }
 
 
-    //22222222
+        } while ((unit is not null) && (unitsTouched.Count() + unit.LoadedUnitsCount < unit.Capacity));
+        
+        return true;
+    }
 
+    private IUnit LoadStep_PickupAroundMe(IUnit trans)
+    {
+        //return the unit that was touched, or null is none is found
+        bool found = false;
+        var vacuumop = (int dx, int dy) =>
+        {
+            IUnit touchedUnit = null;
+            var unit = ActivePlayer.FriendlyUnitAtLoc(trans.X + dx,  trans.Y + dy );
+            if (trans.CanPickUp(unit))  //handles null armies
+            { 
+                //everything is fair game exept units in the container of the same type
+
+                City? city = ActivePlayer.FindCity(trans.X, trans.Y);
+                if( city is not null)
+                {
+                    unit!.CreateStandingOrder(StandingOrders.LongGoto, trans.X, trans.Y);
+                    touchedUnit = unit;
+                } else if(!unit.IsContained)
+                {
+                    //normal armies hanging around
+                    unit!.CreateStandingOrder(StandingOrders.LongGoto, trans.X, trans.Y);
+                    touchedUnit = unit;
+                }
+
+            }
+            return touchedUnit; //null if nothing found
+        };
+
+        var ty = _locsAround.TakeWhile((x) => !found);
+        foreach (var loc in ty)
+        {
+            
+            IUnit? unit = vacuumop(loc.x, loc.y);  //send a single army to me
+            if (unit is not null) return unit;
+        }
+
+        return null; ;
+        //vacuumop(-1, -1);
+
+
+        //vacuumop(-1, 0);
+        //vacuumop(-1, 1);
+        //vacuumop(0, -1);
+        //vacuumop(0, 1);
+        //vacuumop(1, -1);
+        //vacuumop(1, 0);
+        //vacuumop(1, 1);
+
+    }
+
+    //create a Loc[] member and initialize it with some values
+
+
+    private Loc[] _locsAround = new Loc[]
+        {
+            new Loc { x=-1, y=-1},
+            new Loc { x=-1, y=0},
+            new Loc { x=-1, y=1},
+            new Loc { x=0, y=-1},
+            new Loc { x=0, y=1},
+            new Loc { x=1, y=-1},
+            new Loc { x=1, y=0},
+            new Loc { x=1, y=1},
+        };
 
 
 
@@ -690,4 +788,11 @@ public class EmpireTheGame
 
 
 }//end class EmpireTheGame
+
+
+public struct Loc
+{
+    public int x;
+    public int y;
+}
 

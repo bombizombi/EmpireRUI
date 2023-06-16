@@ -455,6 +455,12 @@ public class PlayerTestsCities
             new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
             new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
             new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
 
             new GameOrder(GameOrder.Type.TestEndGame, -1,-1),
         };
@@ -470,11 +476,10 @@ public class PlayerTestsCities
 
         mapVM.MainGameLoop();
 
+        int p = transp.LoadedUnitsCount;
 
-        var army = new Army(0, 0, player);
-        player.AddUnit(army);
-        Army.rnd = new RandomForTesting(new double[] { 1 });
-        empire.MoveTo(1, 0, army); //conquer
+
+        Assert.Equal(6, transp.LoadedUnitsCount );
 
 
 
