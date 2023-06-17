@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.CodeDom;
+using System.Xml.Linq;
 
 namespace EmpireRUI;
 
@@ -24,7 +25,8 @@ public interface IUnit
 
 
     //public bool IsVisible();
-    public bool CanAttackIt(MapType type);
+    public bool CanAttackIt( IUnit u, MapType mapType);
+    public bool CanAttackCity();
     public bool CanPickUp(IUnit? unit);
     public bool CanStepOn(MapType type);
     //public bool IsInSentry();
@@ -66,6 +68,16 @@ public interface IUnit
 
     public string DisplayActivationMessage { get; }
 }
+
+
+//Army
+//    Transport
+//        Carrier
+//    Fighter
+//    Distroyer
+//        Cruiser
+//        Battleship
+//        Submarine
 
 
 //add debugger display attribute
@@ -181,6 +193,22 @@ public class Army : IUnit
         unitIsContained = true;
     }
 
+    public virtual bool CanAttackIt(IUnit u, MapType landType)
+    {
+        if (u.GetType() == typeof(Army)) return true;
+        if (landType == MapType.land) return true;
+
+        Debug.Assert(landType != MapType.city, "should not be asked this");
+        Debug.Assert(landType == MapType.sea, "should be water");
+
+        if( u.GetType() == typeof(Fighter)) return false;
+        //if (u.GetType() == typeof(Submarines)) return false;
+
+        //can bombard everything on the sea, except fighers and submarines 
+        return true;
+    }
+
+
     public virtual void Unload() { }
     public virtual void Load() { }
 
@@ -201,7 +229,7 @@ public class Army : IUnit
     }
     public virtual bool CanStepOn(MapType type) => type == MapType.land;
 
-    public virtual bool CanAttackIt(MapType type) => type == MapType.city; //lol, we can attack more
+    public virtual bool CanAttackCity() => true;
 
     public virtual bool CanPickUp(IUnit? unit)
     {
@@ -455,16 +483,9 @@ public class Transport : Army
 
 
     //public virtual bool CanAttackIt(int type)
-    public override bool CanAttackIt(MapType type)
-    {
-        //if opponents city, no
-        if ( type == MapType.city) return false; //only armies can attack cities
+    public override bool CanAttackCity() => false;
 
-        //if own, can't
-        //if opponents unit, perhaps
-        return false;
 
-    }
     //public override FoggyMap GetUnitType()
     //{ //this was used from the GUI rendering code
     //    return FoggyMap.transport;
@@ -475,6 +496,17 @@ public class Transport : Army
         if (unit is null) return false;
         return unit.GetType() == typeof(Army);
     }
+
+    public override bool CanAttackIt(IUnit u, MapType landType)
+    {
+        //transports can yolo everything on the sea
+        if (landType == MapType.sea)
+        {
+            return true;
+        }
+        return false;
+    }
+
 
 
 

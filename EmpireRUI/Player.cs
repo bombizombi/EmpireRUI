@@ -693,7 +693,10 @@ public class Player
         return null;
     }
 
-
+    public IUnit? EnemyUnitAtLoc(int x, int y)
+    {
+        return app.EnemyUnitAtLocForPlayer(x, y, this);
+    }
 
 
 

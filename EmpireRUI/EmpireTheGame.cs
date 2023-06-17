@@ -1,4 +1,5 @@
-﻿using System.Xaml;
+﻿using System.Runtime.CompilerServices;
+using System.Xaml;
 
 namespace EmpireRUI;
 
@@ -291,15 +292,15 @@ public class EmpireTheGame
         //add potential other action for clicks here
         if (army == null) return false;
         //Debug.Assert( army != null , "trying to move, but no unit is active");   
-        /*
 
 
+        //MoveTo is single step only
         if (Math.Abs(y - army.Y) > 1) return false;
         if (Math.Abs(x - army.X) > 1) return false;
 
         bool doNotAllowGoingNowhere = (army.X == x) && (army.Y == y);
         if (doNotAllowGoingNowhere) return false;
-        */
+
 
 
         //get land type
@@ -371,6 +372,187 @@ public class EmpireTheGame
 
         return false;
     }
+
+
+
+
+    public bool NewMoveTo(int x, int y, IUnit? army = null)
+    {
+        army = army ?? ActivePlayer.ActiveUnit;
+        if (army == null) return false;
+
+        //can only move to land close by, and can't step on the edge
+        if (!CheckMapEdges(x, y))
+        {
+            Debug.WriteLine("can't move out of the map edge");
+            return false;
+        }
+
+        //MoveTo is single step only
+        if (Math.Abs(y - army.Y) > 1) return false;
+        if (Math.Abs(x - army.X) > 1) return false;
+
+        bool doNotAllowGoingNowhere = (army.X == x) && (army.Y == y);
+        if (doNotAllowGoingNowhere) return false;
+
+
+        var reason = CanMoveTo(x, y, army);
+        if( ReasonIsYes( reason) )
+        {
+
+            MoveToActual(x, y, army);
+        }
+
+        return false;  //see ret usage
+
+
+        /*
+        //get land type
+        MapType type = Map.Map[x + y * Map.SizeX];
+
+
+        //this is no good.  Armies attack enemy and neutral cities, but enter their cities
+        if (type == MapType.city) return Move_HandleCity(army, x, y);
+
+
+        //check if it can hop on it
+        var ship = ActivePlayer.FriendlyContainerAtLoc(x, y);
+        if (ship != null) return Move_HandleLoading(army, x, y, ship);
+
+
+        //check if target loc is already occupied
+        var friend = ActivePlayer.FriendlyUnitAtLoc(x, y);
+        if (friend != null) return false; //here we can make some push for room logic?
+
+
+        //check if it can bombard it
+
+        //check unit if it likes it
+        if (!army.CanStepOn(type)) return false;
+
+        return MoveTo_Impl(army, x, y);
+        */
+    }
+
+
+    //2222222222222222
+
+    public Reason CanMoveTo(int x, int y, IUnit u)
+    {
+        MapType landType = Map.Map[x + y * Map.SizeX];
+
+        if (landType == MapType.city)
+        {
+            City? city = ActivePlayer.FindCity(x, y);
+            bool cityOwnedByPlayer = city != null;
+            if (cityOwnedByPlayer)
+            {
+                return Reason.CityOwnedByPlayer;
+            }
+            //check if unit hates it
+            if (u.CanAttackCity())
+            {
+                return Reason.UnitCanAttackCity;
+            }
+            return Reason.No;
+        }
+
+        //check if it can hop on it
+        var friendlyNonfullContainer = ActivePlayer.FriendlyContainerAtLoc(x, y);
+        if (friendlyNonfullContainer != null)
+        {
+            bool caseArmyToTrans = (u.GetType() == typeof(Army)) && (friendlyNonfullContainer.GetType() == typeof(Transport));
+            bool casePlaneToCarrier = (u.GetType() == typeof(Fighter)) && (friendlyNonfullContainer.GetType() == typeof(Carrier));
+            if (caseArmyToTrans || casePlaneToCarrier)
+            {
+                return Reason.UnitCanHopOn;
+            }
+            return Reason.No;
+        }
+
+
+        //check if target loc is already occupied
+        var friend = ActivePlayer.FriendlyUnitAtLoc(x, y);
+        if (friend != null) return Reason.FriendAlreadyThere;
+
+
+        var enemy = ActivePlayer.EnemyUnitAtLoc(x, y);
+        if( enemy != null)
+        {
+            if (u.CanAttackIt(enemy, landType))
+            {
+                return Reason.UnitCanAttack;
+            }
+        }
+        //check if it can bombard it.  This is included in the CanAttackIt
+
+
+        //check unit if it likes it
+        if ( u.CanStepOn( landType))
+        {
+            return Reason.Yes;            
+        }
+
+        return Reason.No; //doesn't like the land type
+    }
+
+
+    public enum Reason : int
+    {
+        //reasons to move or not to move
+        No = 0,
+        FriendAlreadyThere, //no
+        Yes = 2,
+        CityOwnedByPlayer, //yes
+        UnitCanAttackCity, //yes
+        UnitCanHopOn, //yes
+        UnitCanAttack, //yes
+    }
+    private bool ReasonIsYes(Reason r) => ((int)r) >= ((int)Reason.Yes);
+
+
+    public bool MoveToActual(int x, int y, IUnit u)
+    {
+        MapType landType = Map.Map[x + y * Map.SizeX];
+
+        if (landType == MapType.city) return Move_HandleCity(u, x, y);
+
+        //check if it can hop on it
+        var ship = ActivePlayer.FriendlyContainerAtLoc(x, y);
+        if (ship != null) return Move_HandleLoading(u, x, y, ship);
+
+
+        //check if target loc is already occupied
+        var friend = ActivePlayer.FriendlyUnitAtLoc(x, y);
+        if (friend != null) return false; //here we can make some push for room logic?
+
+        /*
+        //attack not available
+        //from Can version 11111111111111111111111111111111111111111111111111111
+        var enemy = ActivePlayer.EnemyUnitAtLoc(x, y);
+        if (enemy != null)
+        {
+            if (u.CanAttackIt(enemy))
+            {
+                return Reason.UnitCanAttack;
+            }
+        }
+        //check if it can bombard it.  This is included in the CanAttackIt
+        //from Can version22222222222222222222222222222222222222222222222222222222
+        */
+
+        //check unit if it likes it
+        if (!u.CanStepOn(landType)) return false;
+
+        return MoveTo_Impl(u, x, y);
+        //move actual end
+
+
+
+
+    }
+
+
 
 
 #if oldMOVEasdfasd
@@ -565,7 +747,7 @@ public class EmpireTheGame
 
 
         //check if unit hates it
-        if (u.CanAttackIt(MapType.city))
+        if (u.CanAttackCity())
         {
             //well, attack it is
 
@@ -789,6 +971,20 @@ public class EmpireTheGame
         return true;
     }
 
+    internal IUnit? EnemyUnitAtLocForPlayer(int x, int y, Player mainPlayer)
+    {
+        foreach( var player in Players)
+        {
+            if( player == mainPlayer) continue;
+            foreach( var unit in player.Units)
+            {
+                if (unit.IsContained) continue;
+                if ((unit.X == x) && (unit.Y == y)) return unit;
+            }
+
+        }
+        return null;
+    }
 
 
 }//end class EmpireTheGame
