@@ -447,7 +447,8 @@ public class Player
         //armies from this player
         foreach (var army in units)
         {
-            rez.AppendLine($"at ({army.X,2},{army.Y,2}) army {army.Name} ");
+            string active = (army == ActiveUnit) ? "ACTIVE" : "";
+            rez.AppendLine($"at ({army.X,2},{army.Y,2}) army {army.Name} {active} ");
         }
         //armies from all the players
 

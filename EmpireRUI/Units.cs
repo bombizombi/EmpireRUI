@@ -29,7 +29,7 @@ public interface IUnit
     public bool CanStepOn(MapType type);
     //public bool IsInSentry();
 
-    public void EnterCity();
+    public void EnterCity(City city);
     public bool AttackCity();
     public void LoadContainer(); //this unit enters a container
     public void LoadUnit(IUnit u, int x, int y); //this container gets a new passanger unit
@@ -69,7 +69,7 @@ public interface IUnit
 
 
 //add debugger display attribute
-[DebuggerDisplay("{Name} {X},{Y} {StepsAvailable} {Hitpoints} {IsContained")]
+[DebuggerDisplay("{Name} ({X},{Y}) s:{StepsAvailable} h:{Hitpoints} {IsContained}")]
 public class Army : IUnit
 {
 
@@ -156,7 +156,7 @@ public class Army : IUnit
     protected virtual void MoveContainedUnits(int x, int y) {}
 
 
-    public virtual void EnterCity()
+    public virtual void EnterCity(City? city=null)
     {
         //entering the city removes all steps, and resets unit range
         stepsAvailable = 0;
@@ -350,6 +350,25 @@ public class Transport : Army
         u.LoadContainer();
 
     }
+
+    public override void EnterCity(City? city=null)
+    {
+        base.EnterCity(city);
+
+        foreach (var u in loadedUnits)
+        {
+            //loadedUnits keep their steps, and their "contained" status
+            //they also wake up
+            if(u.StandingOrder == StandingOrders.Sentry)
+            {
+                u.StandingOrder = StandingOrders.None;
+            }
+        }
+        loadedUnits.RemoveRange(0, loadedUnits.Count); //clear the list
+
+    }
+
+
     public override bool IsFull => loadedUnits.Count() >= capacity;
 
     public override void UnloadUnit(IUnit u)

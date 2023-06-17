@@ -553,8 +553,9 @@ public class EmpireTheGame
             //enter the city
             u.EnterCity(); //we enter the city too late, its already rendered
             */
+
             MoveTo_Impl(u, x, y);
-            u.EnterCity(); // be contained in the city, also lose all movements left
+            u.EnterCity(city); // be contained in the city, also lose all movements left
 
             //now, move all contained units to the city and wake them up
 
@@ -699,7 +700,9 @@ public class EmpireTheGame
 
 
         } while ((unit is not null) && (unitsTouched.Count() + unit.LoadedUnitsCount < unit.Capacity));
-        
+
+        transporter.StepsAvailable = 0;
+
         return true;
     }
 
