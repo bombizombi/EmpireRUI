@@ -88,8 +88,14 @@ public partial class MapView : MapViewBase
     {
         MapViewModel vm = ViewModel;
 
+        var blinkingTime = TimeSpan.FromSeconds(0.5);
+        if( interaction.Input == "blink")
+        {
+            blinkingTime = TimeSpan.FromSeconds(0.25);
+        }
+
         //start the active army hearthbeat on start of every interaction
-        var heartbeat = Observable.Interval(TimeSpan.FromSeconds(0.5))
+        var heartbeat = Observable.Interval(blinkingTime)
             .Select(x => x % 2 == 0)
             //.Do(x => Debug.WriteLine($"heartbeat {x}"))
             //.TakeUntil(interaction.Input)

@@ -585,6 +585,7 @@ public class Player
                     //                               "is transporter fully loaded with steps left? -but opposite"
                     armyMoved = HandleStandingOrders(u);
                     subjectMessage.OnNext($"army {u.Name} executing standing order.");
+                    Debug.WriteLine($"army {u.Name} executing standing order. {u}");
                 }
                 //logic here is wrong, if we first auto-move unit and then activate if there are still steps left
                 //we never give MainGameLoop chance to create some delay between steps (so that user can actually

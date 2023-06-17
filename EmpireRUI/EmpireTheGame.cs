@@ -699,7 +699,8 @@ public class EmpireTheGame
             }
 
 
-        } while ((unit is not null) && (unitsTouched.Count() + unit.LoadedUnitsCount < unit.Capacity));
+        } while ((unit is not null) && 
+            (unitsTouched.Count() + transporter.LoadedUnitsCount < transporter.Capacity));
 
         transporter.StepsAvailable = 0;
 
@@ -718,7 +719,7 @@ public class EmpireTheGame
             { 
                 //everything is fair game exept units in the container of the same type
 
-                City? city = ActivePlayer.FindCity(trans.X, trans.Y);
+                City? city = ActivePlayer.FindCity(trans.X+dx, trans.Y+dy);
                 if( city is not null)
                 {
                     unit!.CreateStandingOrder(StandingOrders.LongGoto, trans.X, trans.Y);

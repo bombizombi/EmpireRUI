@@ -69,7 +69,7 @@ public interface IUnit
 
 
 //add debugger display attribute
-[DebuggerDisplay("{Name} ({X},{Y}) s:{StepsAvailable} h:{Hitpoints} {IsContained}")]
+[DebuggerDisplay("{Name} ({X},{Y}) s:{StepsAvailable} h:{Hitpoints} {IsContained} {standingOrder}")]
 public class Army : IUnit
 {
 

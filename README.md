@@ -197,7 +197,11 @@ army in a city:                      city     city
 -messages about standing orders go in sync with actual movements, so they go off too fast
 
 
+2023-06-17
 
+MoveTo ->
+	CanMove 
+	DoMove
 
 
 	
