@@ -84,7 +84,7 @@ public partial class MapView : MapViewBase
 
     private Subject<GameOrder>? tempCommands = new Subject<GameOrder>();
 
-    private async Task GameLoopInteractionHandler(ReactiveUI.InteractionContext<string, GameOrder> interaction)
+    private async Task GameLoopInteractionHandler(ReactiveUI.IInteractionContext<string, GameOrder> interaction)
     {
         MapViewModel vm = ViewModel;
 

@@ -17,6 +17,13 @@ namespace EmpireRUI;
  * Design decisions:
  *      Main game loop, I put it in the MapViewModel, but maybe it belongs to the EmpireTheGame?
  *      
+ *      
+ *      
+ * Todo:
+ *     -move to lib
+ *     -interface that will return observable 
+ *     -sync for one move
+ *     -async for all possible moves?
  * 
  */
 
@@ -280,6 +287,8 @@ public class EmpireTheGame
         //currenty, armies that attack and die do not update foggy map
 
         //can only move to land close by, and can't step on the edge
+
+        //reason for not moving should be returned to the caller
         if (!CheckMapEdges(x, y))
         {
             Debug.WriteLine("can't move out of the map edge");

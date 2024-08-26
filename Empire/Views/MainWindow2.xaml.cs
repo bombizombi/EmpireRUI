@@ -36,8 +36,14 @@ namespace Empire.Views
         public static int CELL_W = 30;
         public static int CELL_H = 30;
 
+        private MapViewModel map;
+
+        private MapBlock[,] copyOfMapBlocks;
+        private Dictionary<IUnit, MapBlock> copyOfArmyBlocks;
+        //private MapBlock[,] copyOfArmyBlocks;
+
         //for the map blocks, we well keep a reference inside a 2d array
-        //for the army blocks, we need a dict since maps are scattered 
+        //for the army blocks, we need a dict since units are scattered 
         public MainWindow2(MapViewModel mvm)
         {
             map = mvm;
@@ -57,12 +63,6 @@ namespace Empire.Views
 
 
         }
-        private MapViewModel map;
-
-        private MapBlock[,] copyOfMapBlocks;
-        private Dictionary<IUnit, MapBlock> copyOfArmyBlocks;
-        //private MapBlock[,] copyOfArmyBlocks;
-
 
         private MapViewModel GetVM()
         {

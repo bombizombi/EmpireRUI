@@ -35,9 +35,10 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
         var player = empire.AddPlayer();
         var army = new Army(0, 0, player);
         player.AddUnit( army);
-
         //debug create standing orders
         army.CreateStandingOrder(StandingOrders.LongGoto, 10, 0);
+
+       
         player.AddUnit(new Army(1, 1, player));
 
         Army.rnd = new RandomForTesting(new double[] { 1, 1 }); //always win

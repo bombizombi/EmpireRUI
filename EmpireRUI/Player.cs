@@ -51,7 +51,7 @@ public class Player
             .Select(x =>
                 Observable
                     .Empty<string>()
-                    .Delay(TimeSpan.FromSeconds(0.2))
+                    .Delay(TimeSpan.FromSeconds(0.3))
                     .StartWith(x))
             .Concat()
             //.ObserveOn(RxApp.MainThreadScheduler)

@@ -473,10 +473,6 @@ namespace Empire.Models
             return true;
         }
 
-        //222222222222222222222222222222222222222222222222222222222222
-
-
-        //11111111
 
         public async Task<bool> ExploreStep(IUnit army, FeedbackTasks tasks)
         {
