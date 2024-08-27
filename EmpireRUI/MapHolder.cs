@@ -20,7 +20,7 @@ public class MapHolder
         SizeX = lines[0].Length;
         SizeY = lines.Length;
         Map = new MapType[SizeX * SizeY];
-        Cities = new List<City>();
+        Cities = [];
 
         for (int y = 0; y < SizeY; y++)
         {
@@ -51,7 +51,7 @@ public class MapHolder
     }
 
 
-    public static MapHolder Default => new MapHolder("#o.o#");
+    public static MapHolder Default => new("#o.o#");
 
     public string Dump()
     {
@@ -114,8 +114,8 @@ public class MapHolder
     public MapType[] MapLoader_Load()
     {
         StringBuilder rez = new();
-        string[] dbgdisplay = new string[] { "?", "X", ".", "o" };
-        StringBuilder debugCitiesRez = new StringBuilder();
+        string[] dbgdisplay = ["?", "X", ".", "o"];
+        StringBuilder debugCitiesRez = new();
 
         string fileName = "images/A.MAP";
 
@@ -124,103 +124,101 @@ public class MapHolder
 
         using (var stream = File.Open(fileName, FileMode.Open))
         {
-            using (var reader = new BinaryReader(stream, Encoding.ASCII, false))
+            using var reader = new BinaryReader(stream, Encoding.ASCII, false);
+
+            //header
+            byte hbyte = reader.ReadByte();
+            byte lbyte = reader.ReadByte();
+            int sizeY = hbyte * 256 + lbyte + 1;
+
+            hbyte = reader.ReadByte();
+            lbyte = reader.ReadByte();
+            int sizeX = hbyte * 256 + lbyte + 1;
+
+            //map = new byte[ sizeX * sizeY];  //code like it's 1989.
+            map = new MapType[sizeX * sizeY];
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+
+            cities = [];
+
+
+            //map body
+
+            int p = 0;
+            int count = 0;
+            var inccheckcount = () =>
+            {
+                count++;
+                if (count % 100 == 0)
+                {
+                    rez.AppendLine();
+                }
+            };
+
+
+            int x = 0; int y = 0;
+
+            while (true)
             {
 
-                //header
-                byte hbyte = reader.ReadByte();
-                byte lbyte = reader.ReadByte();
-                int sizeY = hbyte * 256 + lbyte + 1;
+                byte a = reader.ReadByte();
 
-                hbyte = reader.ReadByte();
-                lbyte = reader.ReadByte();
-                int sizeX = hbyte * 256 + lbyte + 1;
-
-                //map = new byte[ sizeX * sizeY];  //code like it's 1989.
-                map = new MapType[sizeX * sizeY];
-                this.sizeX = sizeX;
-                this.sizeY = sizeY;
-
-                cities = new List<City>();
+                //int type = a & 3;
+                MapType type = (MapType)(a & 3);
+                int length = (a >> 2) + 1;
 
 
-                //map body
-
-                int p = 0;
-                int count = 0;
-                var inccheckcount = () =>
+                if (type == MapType.city)
                 {
-                    count++;
-                    if (count % 100 == 0)
-                    {
-                        rez.AppendLine();
-                    }
-                };
+                    Debug.Assert(length == 1, "cities could be next to each other");
+                    rez.Append(dbgdisplay[(int)type]);
+                    //count++;
+                    inccheckcount();
 
-
-                int x = 0; int y = 0;
-
-                while (true)
+                    debugCitiesRez.AppendLine("len = " + length);
+                }
+                else
                 {
 
-                    byte a = reader.ReadByte();
-
-                    //int type = a & 3;
-                    MapType type = (MapType)(a & 3);
-                    int length = (a >> 2) + 1;
-
-
-                    if (type == MapType.city)
-                    {
-                        Debug.Assert(length == 1, "cities could be next to each other");
-                        rez.Append(dbgdisplay[(int)type]);
-                        //count++;
-                        inccheckcount();
-
-                        debugCitiesRez.AppendLine("len = " + length);
-                    }
-                    else
-                    {
-
-                        for (int i = 0; i < length; i++)
-                        {
-                            rez.Append(dbgdisplay[(int)type]);
-                            inccheckcount();
-                            //count++;
-                        }
-                    }
-
-
-
-                    //up here is just debug string formating
                     for (int i = 0; i < length; i++)
                     {
-                        map[p] = type;
-                        p++;
-
-                        //collect cities
-                        if (type == MapType.city)
-                        {
-                            var c = new City(x, y);
-                            cities.Add(c);
-                        }
-
-                        x++;
-                        if (x >= sizeX)
-                        {
-                            x = 0;
-                            y++;
-                        }
-
+                        rez.Append(dbgdisplay[(int)type]);
+                        inccheckcount();
+                        //count++;
                     }
+                }
 
 
-                    //detect when map is done
-                    if (count == sizeX * sizeY)
+
+                //up here is just debug string formating
+                for (int i = 0; i < length; i++)
+                {
+                    map[p] = type;
+                    p++;
+
+                    //collect cities
+                    if (type == MapType.city)
                     {
-                        //ignoring continent city counts for now
-                        break;
+                        var c = new City(x, y);
+                        cities.Add(c);
                     }
+
+                    x++;
+                    if (x >= sizeX)
+                    {
+                        x = 0;
+                        y++;
+                    }
+
+                }
+
+
+                //detect when map is done
+                if (count == sizeX * sizeY)
+                {
+                    //ignoring continent city counts for now
+                    break;
                 }
             }
         }

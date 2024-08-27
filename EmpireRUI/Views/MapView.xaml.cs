@@ -82,7 +82,7 @@ public partial class MapView : MapViewBase
 
     }
 
-    private Subject<GameOrder>? tempCommands = new Subject<GameOrder>();
+    private Subject<GameOrder>? tempCommands = new();
 
     private async Task GameLoopInteractionHandler(ReactiveUI.IInteractionContext<string, GameOrder> interaction)
     {
@@ -139,7 +139,7 @@ public partial class MapView : MapViewBase
     private void KeyboardDirection(Point p)
     {
         //action comand order move GameOrder
-        GameOrder order = new GameOrder(GameOrder.Type.Move, (int)p.X, (int)p.Y);
+        GameOrder order = new(GameOrder.Type.Move, (int)p.X, (int)p.Y);
         tempCommands?.OnNext(order);
         tempCommands?.OnCompleted();
     }

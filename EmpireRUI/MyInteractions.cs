@@ -24,7 +24,7 @@ public class MyInteraction<TInput, TOutput> //: Interaction<TInput, TOutput>
 
     public MyInteraction(IScheduler? handlerScheduler = null)
     {
-        _handlers = new List<Func<MyInteractionContext<TInput, TOutput>, IObservable<Unit>>>();
+        _handlers = [];
         _sync = new object();
         _handlerScheduler = handlerScheduler ?? CurrentThreadScheduler.Instance;
     }
@@ -175,7 +175,7 @@ public class MyInteraction<TInput, TOutput> //: Interaction<TInput, TOutput>
     {
         lock (_sync)
         {
-            return _handlers.ToArray();
+            return [.. _handlers];
         }
     }
 

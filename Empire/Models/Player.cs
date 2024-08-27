@@ -69,7 +69,7 @@ namespace Empire.Models
 
         public List<Loc> RenderFoggyForXY(int x, int y)
         {
-            List<Loc> changedlocs = new List<Loc>();
+            List<Loc> changedlocs = new();
 
             //TODO this no good, needs enemy armies as well, this will not see enemies
             //right now, we only see the terrain and cities

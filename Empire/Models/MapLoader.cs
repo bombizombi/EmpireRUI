@@ -41,110 +41,105 @@ namespace Empire.Models
 
 
 
-            using (var stream = File.Open(fileName, FileMode.Open))
+            using var stream = File.Open(fileName, FileMode.Open);
+            using var reader = new BinaryReader(stream, Encoding.ASCII, false);
+
+            //header
+            byte hbyte = reader.ReadByte();
+            byte lbyte = reader.ReadByte();
+            int sizeY = hbyte * 256 + lbyte + 1;
+
+            hbyte = reader.ReadByte();
+            lbyte = reader.ReadByte();
+            int sizeX = hbyte * 256 + lbyte + 1;
+
+            //map = new byte[ sizeX * sizeY];  //code like it's 1989.
+            map = new MapType[sizeX * sizeY];
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+
+            cities = new List<City>();
+
+
+            //map body
+
+            int p = 0;
+            int count = 0;
+            var inccheckcount = () =>
             {
-                using (var reader = new BinaryReader(stream, Encoding.ASCII, false))
+                count++;
+                if (count % 100 == 0)
+                {
+                    rez.AppendLine();
+                }
+            };
+
+
+            int x = 0; int y = 0;
+
+            while (true)
+            {
+
+                byte a = reader.ReadByte();
+
+                //int type = a & 3;
+                MapType type = (MapType)(a & 3);
+                int length = (a >> 2) + 1;
+
+
+                if (type == MapType.city)
+                {
+                    Debug.Assert(length == 1, "cities could be next to each other");
+                    rez.Append(dbgdisplay[(int)type]);
+                    //count++;
+                    inccheckcount();
+
+                    debugCitiesRez.AppendLine("len = " + length);
+                }
+                else
                 {
 
-                    //header
-                    byte hbyte = reader.ReadByte();
-                    byte lbyte = reader.ReadByte();
-                    int sizeY = hbyte*256 + lbyte + 1;
-
-                    hbyte = reader.ReadByte();
-                    lbyte = reader.ReadByte();
-                    int sizeX = hbyte * 256 + lbyte + 1;
-
-                    //map = new byte[ sizeX * sizeY];  //code like it's 1989.
-                    map = new MapType[sizeX * sizeY];  
-                    this.sizeX = sizeX;
-                    this.sizeY = sizeY;
-
-                    cities = new List<City>();
-
-
-                    //map body
-
-                    int p = 0;
-                    int count = 0;
-                    var inccheckcount = () =>
+                    for (int i = 0; i < length; i++)
                     {
-                        count++;
-                        if (count % 100 == 0)
-                        {
-                            rez.AppendLine();
-                        }
-                    };
+                        rez.Append(dbgdisplay[(int)type]);
+                        inccheckcount();
+                        //count++;
+                    }
+                }
 
 
-                    int x = 0; int y = 0; 
 
-                    while (true)
+                //up here is just debug string formating
+                for (int i = 0; i < length; i++)
+                {
+                    map[p] = type;
+                    p++;
+
+                    //collect cities
+                    if (type == MapType.city)
                     {
+                        var c = new City(x, y);
+                        cities.Add(c);
+                    }
 
-                        byte a = reader.ReadByte();
-
-                        //int type = a & 3;
-                        MapType type = (MapType)(a & 3);
-                        int length = (a >> 2) + 1;
-
-
-                        if (type == MapType.city) 
-                        {
-                            Debug.Assert(length == 1, "cities could be next to each other");
-                            rez.Append(dbgdisplay[(int)type]);
-                            //count++;
-                            inccheckcount();
-
-                            debugCitiesRez.AppendLine("len = " + length);
-                        }
-                        else
-                        {
-
-                            for (int i = 0; i < length; i++)
-                            {
-                                rez.Append(dbgdisplay[(int)type]);
-                                inccheckcount();
-                                //count++;
-                            }
-                        }
-
-
-
-                        //up here is just debug string formating
-                        for (int i = 0; i < length; i++)
-                        {
-                            map[p] = type;
-                            p++;
-
-                            //collect cities
-                            if( type == MapType.city)
-                            {
-                                var c = new City(x, y);
-                                cities.Add(c);
-                            }
-
-                            x++;
-                            if( x>= sizeX)
-                            {
-                                x = 0;
-                                y++;
-                            }
-
-                        }
-
-
-                        //detect when map is done
-                        if ( count == sizeX * sizeY)
-                        {
-                            //ignoring continent city counts for now
-                            break;
-                        }
-
-
+                    x++;
+                    if (x >= sizeX)
+                    {
+                        x = 0;
+                        y++;
                     }
 
                 }
+
+
+                //detect when map is done
+                if (count == sizeX * sizeY)
+                {
+                    //ignoring continent city counts for now
+                    break;
+                }
+
+
             }
 
 

@@ -41,7 +41,7 @@ public class MainMenuViewModel : ReactiveObject, IRoutableViewModel
        
         player.AddUnit(new Army(1, 1, player));
 
-        Army.rnd = new RandomForTesting(new double[] { 1, 1 }); //always win
+        Army.rnd = new RandomForTesting([1, 1]); //always win
 
 
         var vm = new MapViewModel(HostScreen, empire);

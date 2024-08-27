@@ -50,8 +50,8 @@ public class City
         return null;
     }
 
-    public static int[] freshProduction = new int[] { 6, 12, 24, 30, 24, 36, 48, 60 };
-    public static int[] continuingProduction = new int[] { 5, 10, 20, 25, 20, 30, 40, 50 };
+    public static int[] freshProduction = [6, 12, 24, 30, 24, 36, 48, 60];
+    public static int[] continuingProduction = [5, 10, 20, 25, 20, 30, 40, 50];
 
 
     //reuse city as an Unit factory

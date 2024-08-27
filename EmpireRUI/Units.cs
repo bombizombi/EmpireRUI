@@ -64,7 +64,7 @@ public interface IUnit
     public bool IsFlashing { get; }
 
     public void SetHomeCity(City city);
-    public City HomeCity { get; }
+    public City? HomeCity { get; }
 
     public string DisplayActivationMessage { get; }
 }
@@ -343,7 +343,7 @@ public class Transport : Army
         name = "Transport no " + Army.count;
 
         capacity = Capacity;
-        loadedUnits = new List<IUnit>();
+        loadedUnits = [];
 
     }
 
@@ -546,7 +546,7 @@ public interface IRandom
 public class EmpireRandom : IRandom
 {
     public double NextDouble() => rnd.NextDouble();
-    private static Random rnd = new Random();
+    private static Random rnd = new();
 }
 public class RandomForTesting : IRandom
 {

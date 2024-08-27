@@ -24,8 +24,8 @@ namespace EmpireRUI
             base.OnStartup(e);
             //e.Args.  -d for debugging
 
-            MainView mainView = new MainView();
-            MainViewModel viewModel = new MainViewModel();
+            MainView mainView = new();
+            MainViewModel viewModel = new();
             mainView.DataContext = viewModel;
             mainView.Show();
         }

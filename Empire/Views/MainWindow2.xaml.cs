@@ -23,15 +23,15 @@ namespace Empire.Views
     /// </summary>
     public partial class MainWindow2 : Window
     {
-        public static RoutedCommand DebugCmd = new RoutedCommand();
-        public static RoutedCommand ProductionDialogTestCmd = new RoutedCommand();
-        public static RoutedCommand AsyncTestCmd = new RoutedCommand();
-        public static RoutedCommand Window2Cmd = new RoutedCommand();
+        public static RoutedCommand DebugCmd = new();
+        public static RoutedCommand ProductionDialogTestCmd = new();
+        public static RoutedCommand AsyncTestCmd = new();
+        public static RoutedCommand Window2Cmd = new();
 
-        public static RoutedCommand Sentry = new RoutedCommand();
-        public static RoutedCommand Wait = new RoutedCommand();
-        public static RoutedCommand Unload = new RoutedCommand();
-        public static RoutedCommand Explore = new RoutedCommand();
+        public static RoutedCommand Sentry = new();
+        public static RoutedCommand Wait = new();
+        public static RoutedCommand Unload = new();
+        public static RoutedCommand Explore = new();
 
         public static int CELL_W = 30;
         public static int CELL_H = 30;
@@ -200,10 +200,10 @@ namespace Empire.Views
 
         private void CreateCellMap(MapViewModel map, FoggyMap type, int x, int y)
         {
-            CellViewModel cvm = new CellViewModel(map, "e" + x + y, type, x, y);
+            CellViewModel cvm = new(map, "e" + x + y, type, x, y);
 
             //extract
-            MapBlock mb = new MapBlock();
+            MapBlock mb = new();
             mb.DataContext = cvm;
 
             //copy in both Update and Create below
@@ -248,10 +248,8 @@ namespace Empire.Views
         private MapBlock lastAnimatedBlock;
         private void StartActiveArmyAnimation(MapBlock mb)
         {
-            if( lastAnimatedBlock != null)
-            {
-                lastAnimatedBlock.StopAnimationForActiveCell();
-            }
+            lastAnimatedBlock?.StopAnimationForActiveCell();
+
             mb.StartAnimationForActiveCell();
             lastAnimatedBlock = mb;
         }
@@ -259,10 +257,7 @@ namespace Empire.Views
         private void StopActiveArmyAnimation(IUnit army)
         {
             var mb = copyOfArmyBlocks[army]; 
-            if (mb != null)
-            {
-                mb.StopAnimationForActiveCell();
-            }
+            mb?.StopAnimationForActiveCell();
         }
 
 
@@ -336,7 +331,7 @@ namespace Empire.Views
 
                     //CellViewModel cvm = map.map2[x, y];
                     //army.GetUnitType() assumes all the armies are mine (puts the base type number for display
-                    CellViewModel cvm = new CellViewModel(map, "e" + army.Name, army.GetUnitType(), army.X, army.Y);
+                    CellViewModel cvm = new(map, "e" + army.Name, army.GetUnitType(), army.X, army.Y);
 
                     //extract
                     mb = new MapBlock();
@@ -447,7 +442,7 @@ namespace Empire.Views
             //see if active army is visible
 
             //Rect viewport = new Rect(new Point(0, 0), sv.RenderSize);
-            Rect viewport = new Rect(new Point(0, 0), new Point(sv.ViewportWidth, sv.ViewportHeight));
+            Rect viewport = new(new Point(0, 0), new Point(sv.ViewportWidth, sv.ViewportHeight));
 
             GeneralTransform transform = mb.TransformToAncestor(sv);
             //known to crash here when a breakpoint was set on the CellViewModel image name call
@@ -456,7 +451,7 @@ namespace Empire.Views
             //calculate the current positon from deltas
             Rect egz = transform.TransformBounds(new Rect(new Point(deltaX, deltaY), mb.RenderSize));
 
-            Rect childBounds = new Rect(
+            Rect childBounds = new(
                 new Point(egz.Left - moatSize * CELL_W, egz.Top - moatSize * CELL_H),
                 new Point(egz.Right + moatSize * CELL_W, egz.Bottom + moatSize * CELL_H));
             bool isVisible = viewport.IntersectsWith(childBounds);

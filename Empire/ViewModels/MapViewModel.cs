@@ -78,7 +78,7 @@ namespace Empire.ViewModels
             for (int i = 0; i < map.NumberOfCells; i++)
             {
                 FoggyMap mapType = FoggyMapElem.ConvertFromTerrain(map.map[i]);
-                CellViewModel cvm = new CellViewModel(this, "e" + i, mapType, mapx, mapy);
+                CellViewModel cvm = new(this, "e" + i, mapType, mapx, mapy);
                 EmpireMap.Add(cvm);
                 increase();
                 //EmpireMap.
@@ -128,7 +128,7 @@ namespace Empire.ViewModels
                 for (int x = 0; x < map.sizeX; x++)
                 {
                     FoggyMap type = (FoggyMap)map.map[count];
-                    CellViewModel cvm = new CellViewModel(this, "e" + count, type, x, y);
+                    CellViewModel cvm = new(this, "e" + count, type, x, y);
                     map2[x, y] = cvm;
 
                     count++;
@@ -167,10 +167,10 @@ namespace Empire.ViewModels
             RenderMap();
             RaiseRefreshEvent();
 
-            StringBuilder rez = new StringBuilder();
+            StringBuilder rez = new();
             app.ActivePlayer.DebugStatus(rez);
 
-            SetStatus($"tick {timerCount} {rez.ToString()}");
+            SetStatus($"tick {timerCount} {rez}");
         }
         public void Init()
         {
@@ -178,10 +178,10 @@ namespace Empire.ViewModels
             RenderMap();
             RaiseRefreshEvent();
 
-            StringBuilder rez = new StringBuilder();
+            StringBuilder rez = new();
             app.ActivePlayer.DebugStatus(rez);
 
-            SetStatus( $"tick {timerCount} {rez.ToString()}");
+            SetStatus( $"tick {timerCount} {rez}");
         }
 
         public event MapRefreshedEventHandler MapRefreshed;
@@ -304,7 +304,7 @@ namespace Empire.ViewModels
             {
                 for (int x = 0; x < 15; x++)
                 {
-                    CellViewModel cvm = new CellViewModel(this, "e" + x+","+y, (FoggyMap)fog[x,y].type, x, y);
+                    CellViewModel cvm = new(this, "e" + x+","+y, (FoggyMap)fog[x,y].type, x, y);
                     map.Add(cvm);
                 }
             }
@@ -454,7 +454,7 @@ namespace Empire.ViewModels
             {
                 for (int x = 0; x < 15; x++)
                 {
-                    CellViewModel cvm = new CellViewModel(this, "e" + x + "," + y, (FoggyMap)fog[x, y].type, x, y);
+                    CellViewModel cvm = new(this, "e" + x + "," + y, (FoggyMap)fog[x, y].type, x, y);
                     map.Add(cvm);
                 }
             }
@@ -489,7 +489,7 @@ namespace Empire.ViewModels
             //pop up time
             //popup
             var pvm = new ProductionViewModel(this);
-            ProductionModalWindow win = new ProductionModalWindow(pvm);
+            ProductionModalWindow win = new(pvm);
             win.ShowDialog();
             var rez = pvm.UnitsArray;
             c.SetProduction(pvm.SelectedUnit);

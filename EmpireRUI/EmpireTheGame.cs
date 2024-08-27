@@ -880,7 +880,7 @@ public class EmpireTheGame
         }
 
         IUnit unit;
-        List<IUnit> unitsTouched = new();
+        List<IUnit> unitsTouched = [];
         do
         {
             unit = LoadStep_PickupAroundMe(transporter);
@@ -951,17 +951,17 @@ public class EmpireTheGame
     //create a Loc[] member and initialize it with some values
 
 
-    private Loc[] _locsAround = new Loc[]
-        {
-            new Loc { x=-1, y=-1},
-            new Loc { x=-1, y=0},
-            new Loc { x=-1, y=1},
-            new Loc { x=0, y=-1},
-            new Loc { x=0, y=1},
-            new Loc { x=1, y=-1},
-            new Loc { x=1, y=0},
-            new Loc { x=1, y=1},
-        };
+    private Loc[] _locsAround =
+        [
+            new() { x=-1, y=-1},
+            new() { x=-1, y=0},
+            new() { x=-1, y=1},
+            new() { x=0, y=-1},
+            new() { x=0, y=1},
+            new() { x=1, y=-1},
+            new() { x=1, y=0},
+            new() { x=1, y=1},
+        ];
 
 
 
