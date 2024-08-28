@@ -50,10 +50,10 @@ namespace Empire
         }
 
 
-        public static RoutedCommand DebugCmd = new RoutedCommand();
-        public static RoutedCommand ProductionDialogTestCmd = new RoutedCommand();
-        public static RoutedCommand AsyncTestCmd = new RoutedCommand();
-        public static RoutedCommand Window2Cmd = new RoutedCommand();
+        public static RoutedCommand DebugCmd = new();
+        public static RoutedCommand ProductionDialogTestCmd = new();
+        public static RoutedCommand AsyncTestCmd = new();
+        public static RoutedCommand Window2Cmd = new();
 
         private void DebugCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -152,7 +152,7 @@ namespace Empire
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var pvm = new ProductionViewModel( GetVM());
-            ProductionModalWindow win = new ProductionModalWindow(pvm);
+            ProductionModalWindow win = new(pvm);
             win.ShowDialog();
             var rez = pvm.UnitsArray;
 

@@ -29,8 +29,8 @@ public class Player
     public Player(EmpireTheGame app)
     {
         this.app = app;
-        units = new List<IUnit>();
-        cities = new List<City>();
+        units = [];
+        cities = [];
 
         map = new FoggyMapElem[app.Map.SizeX, app.Map.SizeY];
         for (int y = 0; y < app.Map.SizeY; y++)

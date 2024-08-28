@@ -280,7 +280,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
     public Interaction<string, GameOrder> interactionMove = new(); //property?
     //string imput parameter is unused
 
-    private Subject<string>tempCommands = new Subject<string>();
+    private Subject<string>tempCommands = new();
     internal void TempGoRight()
     {
         tempCommands.OnNext("GoRight");

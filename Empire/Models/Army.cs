@@ -110,7 +110,7 @@ namespace Empire.Models
         public string DebugSOrder()
         {
             if (standingOrder == StandingOrders.None) return "";
-            return $"[{standingOrder.ToString()}]";
+            return $"[{standingOrder}]";
         }
 
 
@@ -122,7 +122,7 @@ namespace Empire.Models
         public virtual int Capacity() => 0;
 
 
-        public static Random rnd = new Random();
+        public static Random rnd = new();
 
         public void NewTurn()
         {

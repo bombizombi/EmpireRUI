@@ -48,6 +48,7 @@ public class ProductionViewModel : ReactiveObject, IRoutableViewModel, IDisposab
     public void Dispose()
     {
         UnregisterHandler();
+        GC.SuppressFinalize(this);
     }
 
     public void UnregisterHandler()

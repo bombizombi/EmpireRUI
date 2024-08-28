@@ -38,12 +38,12 @@ namespace Empire.Views
         public void StartAnimationForActiveCell()
         {
             Storyboard? s = this.Resources["animBlinking"] as Storyboard;
-            if( s is not null) s.Begin();
+            s?.Begin();
         }
         public void StopAnimationForActiveCell()
         {
             Storyboard? s = this.Resources["animBlinking"] as Storyboard;
-            if( s is not null) s.Stop();
+            s?.Stop();
 
         }
 

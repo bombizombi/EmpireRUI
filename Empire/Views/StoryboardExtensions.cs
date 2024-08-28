@@ -11,10 +11,10 @@ namespace Empire.Views
     {
         public static Task BeginAsync(this Storyboard storyboard)
         {
-            System.Threading.Tasks.TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            System.Threading.Tasks.TaskCompletionSource<bool> tcs = new();
 
             if (storyboard == null)
-                tcs.SetException(new ArgumentNullException());
+                tcs.SetException(new ArgumentNullException(nameof(storyboard)));
             else
             {
                 EventHandler onComplete = null;

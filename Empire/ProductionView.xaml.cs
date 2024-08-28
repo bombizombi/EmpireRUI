@@ -30,10 +30,7 @@ namespace Empire
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (ButtonOK_Clicked != null)
-            {
-                ButtonOK_Clicked(this);
-            }
+            ButtonOK_Clicked?.Invoke(this);
 
         }
     }

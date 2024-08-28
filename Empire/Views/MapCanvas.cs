@@ -24,10 +24,8 @@ namespace Empire.Views
             if (blockContainer == null)
                 throw new ArgumentNullException("blockContainer");
 
-            var block = blockContainer.DataContext as CellViewModel;
-            if (block == null)
-                throw new ArgumentException("Element does not have a MapViewModel as its DataContext.", "blockContainer");
-
+            var block = blockContainer.DataContext as CellViewModel 
+                ?? throw new ArgumentException("Element does not have a MapViewModel as its DataContext.", "blockContainer");
             return BlockSize * block.x;
         }
 
@@ -36,10 +34,8 @@ namespace Empire.Views
             if (bubbleContainer == null)
                 throw new ArgumentNullException("bubbleContainer");
 
-            var block = bubbleContainer.DataContext as CellViewModel;
-            if (block == null)
-                throw new ArgumentException("Element does not have a MapViewModel as its DataContext.", "blockContainer");
-
+            var block = bubbleContainer.DataContext as CellViewModel 
+                ?? throw new ArgumentException("Element does not have a MapViewModel as its DataContext.", "bubbleContainer");
             return BlockSize * block.y;
         }
 
