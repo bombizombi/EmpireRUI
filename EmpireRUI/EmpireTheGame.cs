@@ -181,9 +181,9 @@ public class EmpireTheGame
 
     public void OrderLoad()
     {
-        var army = ActivePlayer.ActiveUnit;
-        if (army == null) return;
-        army.Load();
+        var unit = ActivePlayer.ActiveUnit;
+        if (unit == null) return;
+        unit.Load();
     }
 
     public void OrderUnload()
@@ -900,11 +900,12 @@ public class EmpireTheGame
 
     private IUnit LoadStep_PickupAroundMe(IUnit trans)
     {
-        //return the unit that was touched, or null is none is found
+        //return the unit that was touched, or null if none is found
         bool found = false;
-        var vacuumop = (int dx, int dy) =>
+        //var vacuumop = (int dx, int dy) =>
+        Func<int, int, IUnit> vacuumop = (dx, dy) =>
         {
-            IUnit touchedUnit = null;
+            IUnit? touchedUnit = null;
             var unit = ActivePlayer.FriendlyUnitAtLoc(trans.X + dx,  trans.Y + dy );
             if (trans.CanPickUp(unit))  //handles null armies
             { 
@@ -926,11 +927,13 @@ public class EmpireTheGame
             return touchedUnit; //null if nothing found
         };
 
-        var ty = _locsAround.TakeWhile((x) => !found);
+        var ty = _locsAround.TakeWhile((x) => !found);  //?
         foreach (var loc in ty)
         {
             
             IUnit? unit = vacuumop(loc.x, loc.y);  //send a single army to me
+
+            //if we return here, standing order picks up just one passanger
             if (unit is not null) return unit;
         }
 
