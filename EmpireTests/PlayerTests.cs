@@ -394,7 +394,7 @@ public class PlayerTestsCities
     {
         var army = new Army(0, 0, player);
         player.AddUnit(army);
-        Army.rnd = new RandomForTesting(new double[] { 1 });
+        Army.rnd = new RandomForTesting([1]);
         empire.MoveTo(1, 0, army); //conquer
 
         var army2 = new Army(0, 0, player);
@@ -429,7 +429,6 @@ public class PlayerTestsCities
 
     }
 
-#if NOTFORTST1
     [Fact]
     public void TransporterLoadAsAStandingOrderTest()
     {
@@ -489,7 +488,6 @@ public class PlayerTestsCities
 
 
     }
-#endif
 
 
 }
