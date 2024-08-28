@@ -429,7 +429,7 @@ public class PlayerTestsCities
     [Fact]
     public void TransporterLoadAsAStandingOrderTest()
     {
-        Army.rnd = new RandomForTesting(new double[] { 1 });
+        Army.rnd = new RandomForTesting([1]);
         //create armies in the city
         for (int i = 0; i < 7; i++)
         {
