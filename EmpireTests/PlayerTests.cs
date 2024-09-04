@@ -504,6 +504,76 @@ public class TextDumpFlashingTests
     }
 
 
+    [Fact]
+    public async Task LongMoveIntoWaterTest()
+    {
+        Army.rnd = new RandomForTesting([1]);
+        //create armies in the city
+        for (int i = 0; i < 1; i++)
+        {
+            var armyN = new Army(0, 2, player);
+            player.AddUnit(armyN);
+            empire.MoveTo(1, 0, armyN);
+        }
+
+        //var transp = new Transport(1, 1, player);
+
+        //var router = new Router
+        //var mockScreen = new ReactiveUI.Benchmarks.MockHostScreen(); 
+        var mapVM = new MapViewModel(null, empire, testingMode: true);
+
+        var fakeMoves = new GameOrder[]
+        {
+            new GameOrder(GameOrder.Type.Load, -1,-1),
+
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+
+            new GameOrder(GameOrder.Type.TestEndGame, -1,-1),
+        };
+
+        mapVM.interactionMove.RegisterHandler(interaction => {
+            interaction.SetOutput(fakeMoves[0]);
+            fakeMoves = fakeMoves.Skip(1).ToArray();
+
+            Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
+
+        });
+        mapVM.ProductionInteraction.RegisterHandler(interaction => {
+            interaction.SetOutput(new ProductionData());
+        });
+        mapVM.Confirm.RegisterHandler(interaction =>
+        {
+            interaction.SetOutput(Unit.Default);
+        });
+
+
+
+        await mapVM.MainGameLoop();
+
+        //int p = transp.LoadedUnitsCount;
+
+
+        Assert.Equal(6, 1);
+
+
+
+
+    }
+
+    //22
+
 }
 
 
