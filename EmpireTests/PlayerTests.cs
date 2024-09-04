@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reactive;
 
 namespace EmpireTests;
 
@@ -51,15 +52,7 @@ public class PlayerTests
             ".. \r\n" +
             "   \r\n";
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
-        {
-            count++;
-            result = x;
-            observableHappened = true;
-        });
+        (bool observableHappened, string result, int count) = Helper.ObserveAndCount(empire);
 
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
@@ -99,30 +92,26 @@ public class PlayerTestsMultipleArmies
             "..o\r\n" +
             "   \r\n";
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
-        {
-            count++;
-            result = x;
-            observableHappened = true;
-        });
+
+        (bool observableHappened, string result, int count) = Helper.ObserveAndCount(empire);
 
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
         Assert.Equal(1, count);
 
     }
+
+
+
     [Fact]
-    public void ArmyCantStepIntoFriendlyArmy()
+    public void ArmyCannotStepIntoFriendlyArmy()
     {
         var army1 = new Army(0, 0, player);
         var army2 = new Army(1, 0, player);
         player.AddUnit(army1);
         player.AddUnit(army2);
 
-        empire.MoveTo(1, 0, army1);
+        bool moveResult = empire.MoveTo(1, 0, army1);
 
 
         string expectedFoggyMapString =
@@ -130,16 +119,9 @@ public class PlayerTestsMultipleArmies
             "..o\r\n" +
             "   \r\n";
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
-        {
-            count++;
-            result = x;
-            observableHappened = true;
-        });
+        (var observableHappened, var result, var count) = Helper.ObserveAndCount(empire);
 
+        Assert.False(moveResult); //MoveTo should return false
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
         Assert.Equal(1, count);
@@ -158,47 +140,85 @@ public class PlayerTestsStandingOrderGivesFeedback
     public PlayerTestsStandingOrderGivesFeedback()
     {
         string map = """
-                        oooooooooooooooooooooooo
-                        ..oooooooooooooooooooooo
-                        .......................#
+                        ooooooooo
+                        ..ooooooo
+                        ........#
                         """;
         empire = new EmpireTheGame(map, playerCount: 1);
         player = empire.AddPlayer();
     }
 
     [Fact]
-    public void PlayersArmiesHandleStandingOrderAndFeedback()
+    public async void PlayersArmiesHandleStandingOrderAndFeedback()
     {
         var army = new Army(0, 0, player);
         player.AddUnit(army);
 
         //a wish
-        //army.standingOrder = StandingOrders.LongGoto;
-        //army.TargetX = 8;
-        //army.TargetY = 0;
-
+        army.standingOrder = StandingOrders.LongGoto;
+        army.TargetX = 6;
+        army.TargetY = 0;
+        
         //player .AddStandingOrder(new MoveOrder(army, 1, 0));
 
-        /*
-        string expectedFoggyMapString =
-            "aa.\r\n" +
-            "..o\r\n" +
-            "   \r\n";
+        //a wish might come true
+        var mapVM = new MapViewModel(null, empire);
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
+        var fakeMoves = new GameOrder[]
         {
-            count++;
-            result = x;
-            observableHappened = true;
+            new GameOrder(GameOrder.Type.Load, -1,-1),
+
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+            new GameOrder(GameOrder.Type.SkipMove, -1,-1), //skip move to allow for the transport to load
+
+            new GameOrder(GameOrder.Type.TestEndGame, -1,-1),
+        };
+
+        mapVM.interactionMove.RegisterHandler(interaction => {
+            interaction.SetOutput(fakeMoves[0]);
+            fakeMoves = fakeMoves.Skip(1).ToArray();
+
+            Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
+
+        });
+        mapVM.ProductionInteraction.RegisterHandler(interaction => {
+            interaction.SetOutput(new ProductionData());
+        });
+        mapVM.Confirm.RegisterHandler(interaction =>
+        {
+            interaction.SetOutput(Unit.Default);
         });
 
+
+
+        await mapVM.MainGameLoop();
+
+        (var observableHappened, var result, var count) = Helper.ObserveAndCount(empire);
+
+        string expectedMap =
+            "ooooooao \r\n" + 
+            "..oooooo \r\n" +
+            "         \r\n";
+
+
         Assert.True(observableHappened);
-        Assert.Equal(expectedFoggyMapString, result);
+        Assert.Equal(expectedMap, result);
         Assert.Equal(1, count);
-        */
+
+
+
+
     }
 
 
@@ -242,15 +262,8 @@ public class PlayerTestsCities
                              
                          """ + "\r\n";
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
-        {
-            count++;
-            result = x;
-            observableHappened = true;
-        });
+        (bool observableHappened, string result, int count) = Helper.ObserveAndCount(empire);
+
 
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
@@ -286,15 +299,8 @@ public class PlayerTestsCities
                          ..  
                          """ + "\r\n";
 
-        bool observableHappened = false;
-        string result = "";
-        int count = 0;
-        empire.Players.First().DumpObs.Subscribe(x =>
-        {
-            count++;
-            result = x;
-            observableHappened = true;
-        });
+        (bool observableHappened, string result, int count) = Helper.ObserveAndCount(empire);
+
 
         Assert.True(observableHappened);
         Assert.Equal(expectedFoggyMapString, result);
@@ -374,7 +380,7 @@ public class PlayerTestsCities
 
 
 
-    public class TextDumpFlashingTests
+public class TextDumpFlashingTests
 {
     private EmpireTheGame empire;
     private Player player;
@@ -430,9 +436,9 @@ public class PlayerTestsCities
     }
 
     [Fact]
-    public void TransporterLoadAsAStandingOrderTest()
+    public async Task TransporterLoadAsAStandingOrderTest()
     {
-        Army.rnd = new RandomForTesting(new double[] { 1 });
+        Army.rnd = new RandomForTesting([1]);
         //create armies in the city
         for (int i = 0; i < 7; i++)
         {
@@ -445,7 +451,7 @@ public class PlayerTestsCities
 
         //var router = new Router
         //var mockScreen = new ReactiveUI.Benchmarks.MockHostScreen(); 
-        var mapVM = new MapViewModel(null, empire);
+        var mapVM = new MapViewModel(null, empire, testingMode: true);
 
         var fakeMoves = new GameOrder[]
         {
@@ -471,13 +477,21 @@ public class PlayerTestsCities
         mapVM.interactionMove.RegisterHandler(interaction =>  {
             interaction.SetOutput(fakeMoves[0]);
             fakeMoves = fakeMoves.Skip(1).ToArray();
+
+            Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
+
         });
         mapVM.ProductionInteraction.RegisterHandler(interaction => {
             interaction.SetOutput(new ProductionData());
         });
+        mapVM.Confirm.RegisterHandler(interaction =>
+        {
+            interaction.SetOutput(Unit.Default);
+        });
 
 
-        mapVM.MainGameLoop();
+
+        await mapVM.MainGameLoop();
 
         int p = transp.LoadedUnitsCount;
 
@@ -491,3 +505,29 @@ public class PlayerTestsCities
 
 
 }
+
+
+internal static class Helper
+{
+    public static (bool, string, int) ObserveAndCount(EmpireTheGame empire)
+    {
+        bool observableHappened = false;
+        string result = "";
+        int count = 0;
+
+        //lets hope Subscribe is always sync call
+        //empire.Players.First().DumpObs.Subscribe(x =>
+        empire.Players.First().FastDumpObs.Subscribe(x =>
+        {
+            count++;
+            result = x;
+            observableHappened = true;
+        });
+
+        return (observableHappened, result, count);
+    }
+}
+
+
+
+
