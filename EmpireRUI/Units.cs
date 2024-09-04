@@ -138,6 +138,7 @@ public class Army : IUnit
         //await tasks.Add(this, Tasks.StopBeingActive);
         //await tasks.Add(this, Tasks.DelayInbetweenSteps, locs);
 
+        //potential inconsistency here, we move to absolute coords, but always remove just one step from the steps available
 
     }
 

@@ -28,10 +28,13 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
         classCount++;
     }
 
-    public MapViewModel(IScreen screen, EmpireTheGame e)
+    public MapViewModel(IScreen? screen, EmpireTheGame e, bool testingMode = false)
     {
         classCount++;
-        if (classCount > 1) { Debugger.Break(); }
+        if (!testingMode)
+        {
+            if (classCount > 1) { Debugger.Break(); }
+        }
 
         HostScreen = screen;
         empire = e;
@@ -56,7 +59,7 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
     }
     public string UrlPathSegment { get; } = "Map";
-    public IScreen HostScreen { get; }
+    public IScreen? HostScreen { get; }
 
     private bool loopStarted = false;
     public async Task MainGameLoopSafe()
@@ -136,8 +139,10 @@ public class MapViewModel : ReactiveObject, IRoutableViewModel
 
         //move to gameover screen
         var vm = new GameOverViewModel(HostScreen, empire);
-        HostScreen.Router.Navigate.Execute(vm);
         //HostScreen.Router.Navigate.Execute(vm);
+        //HostScreen.Router.Navigate.Execute(vm);
+        if( HostScreen is not null) await HostScreen.Router.Navigate.Execute(vm);
+
 
 
 

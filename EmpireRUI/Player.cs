@@ -23,6 +23,7 @@ public class Player
 
 
     public IObservable<string> DumpObs { get; set; }
+    public IObservable<string> FastDumpObs { get; set; } //for testing
     public IObservable<string> MessageObs { get; set; }
 
 
@@ -59,7 +60,9 @@ public class Player
         //DumpObs = subjectDump.AsObservable(); //this will put nondelayed obs as public
 
         DumpObs = slowDump;
+
         //expose normal dump as well for testing
+        FastDumpObs = subjectDump;
 
         subjectMessage = new BehaviorSubject<string>("");
         MessageObs = subjectMessage.AsObservable();
@@ -443,7 +446,7 @@ public class Player
 
     public string DebugDumpArmies(int x, int y)
     {
-        var rez = new StringBuilder();
+        StringBuilder rez = new();
         //armies from this player
         foreach (var army in units)
         {
@@ -471,6 +474,7 @@ public class Player
             {
                 d += "flashing";
             }
+            if (army.Capacity > 0) d += $"carry {army.LoadedUnitsCount}/{army.Capacity} units.";
             rez.AppendLine($"at ({army.X,-2},{army.Y,-2}) army {army.Name} {d}");
         }
 

@@ -13,9 +13,11 @@ public class MapHolder
     public MapType[] Map;
     public List<City> Cities { get; set; }
 
+    public string savedMap;  //for debug access
 
     public MapHolder(string mapString)
     {
+        savedMap = mapString;
         var lines = mapString.Split(Environment.NewLine);
         SizeX = lines[0].Length;
         SizeY = lines.Length;
