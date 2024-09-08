@@ -379,7 +379,7 @@ public class EmpireTheGame
             }
         }
 
-        return false;
+        return true; //the move was ok
     }
 
 
@@ -814,6 +814,7 @@ public class EmpireTheGame
 
         do
         {
+            //path finding goes here
 
             int deltax = army.TargetX - army.X;
             int deltay = army.TargetY - army.Y;
@@ -839,7 +840,22 @@ public class EmpireTheGame
 
 
             //this might step onto a city or an emety unit, without attacking, without entering
-            army.HackMoveAndReduceSteps(stepX, stepY);
+            //army.HackMoveAndReduceSteps(stepX, stepY);
+
+            bool didMove = MoveTo( army.X + stepX, army.Y + stepY , army);
+            //not checking return value will create infinite loop
+
+            if (!didMove)
+            {
+                army.StandingOrder = StandingOrders.None;
+                //clear target coordinates
+                army.TargetX = -1;
+                army.TargetY = -1;
+                //await tasks.Add(army, Tasks.DelayAfterMove);
+                //Debugger.Break(); //see how we are going to create this delay
+                break;
+            }
+
             //army.X += stepX; //this is wrong
             //army.Y += stepY;
             //army.StepsAvailable -= 1;
@@ -937,17 +953,9 @@ public class EmpireTheGame
             if (unit is not null) return unit;
         }
 
-        return null; ;
-        //vacuumop(-1, -1);
+        return null; 
 
 
-        //vacuumop(-1, 0);
-        //vacuumop(-1, 1);
-        //vacuumop(0, -1);
-        //vacuumop(0, 1);
-        //vacuumop(1, -1);
-        //vacuumop(1, 0);
-        //vacuumop(1, 1);
 
     }
 

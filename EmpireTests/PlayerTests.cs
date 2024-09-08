@@ -445,9 +445,12 @@ public class TextDumpFlashingTests
             var armyN = new Army(2, 0, player);
             player.AddUnit(armyN);
             empire.MoveTo(1, 0, armyN);
+            armyN.standingOrder = StandingOrders.Sentry;
+
         }
 
         var transp = new Transport(1, 1, player);
+        player.AddUnit(transp);
 
         //var router = new Router
         //var mockScreen = new ReactiveUI.Benchmarks.MockHostScreen(); 
@@ -476,9 +479,10 @@ public class TextDumpFlashingTests
 
         mapVM.interactionMove.RegisterHandler(interaction =>  {
             interaction.SetOutput(fakeMoves[0]);
+            Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
+
             fakeMoves = fakeMoves.Skip(1).ToArray();
 
-            Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
 
         });
         mapVM.ProductionInteraction.RegisterHandler(interaction => {
@@ -511,9 +515,15 @@ public class TextDumpFlashingTests
         //create armies in the city
         for (int i = 0; i < 1; i++)
         {
-            var armyN = new Army(0, 2, player);
+            var armyN = new Army(2, 0, player);
             player.AddUnit(armyN);
-            empire.MoveTo(1, 0, armyN);
+
+            empire.MoveTo(0, 2, armyN);
+
+            armyN.standingOrder = StandingOrders.LongGoto;
+            armyN.TargetX = 0;
+            armyN.TargetY = 2;
+
         }
 
         //var transp = new Transport(1, 1, player);
@@ -545,11 +555,11 @@ public class TextDumpFlashingTests
 
         mapVM.interactionMove.RegisterHandler(interaction => {
             interaction.SetOutput(fakeMoves[0]);
-            fakeMoves = fakeMoves.Skip(1).ToArray();
-
             Debug.WriteLine($"Sending test move {fakeMoves.FirstOrDefault()} to game loop");
 
+            fakeMoves = fakeMoves.Skip(1).ToArray();
         });
+
         mapVM.ProductionInteraction.RegisterHandler(interaction => {
             interaction.SetOutput(new ProductionData());
         });
@@ -564,8 +574,27 @@ public class TextDumpFlashingTests
 
         //int p = transp.LoadedUnitsCount;
 
+        (var observableHappened, var result, var count) = Helper.ObserveAndCount(empire);
 
-        Assert.Equal(6, 1);
+
+//o#oo
+//..o.
+//a.# 
+
+        //Assert.Equal(6, 1);
+
+
+        string expectedFoggyMap = """
+                          #ao
+                          .o.
+                             
+                         """ + "\r\n";
+
+       
+
+        Assert.True(observableHappened);
+        Assert.Equal(expectedFoggyMap, result);
+        Assert.Equal(1, count);
 
 
 
