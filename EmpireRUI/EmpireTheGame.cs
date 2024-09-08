@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reactive;
+using System.Runtime.CompilerServices;
 using System.Xaml;
 
 namespace EmpireRUI;
@@ -804,7 +805,7 @@ public class EmpireTheGame
         ActivePlayer.RenderFoggyForXY(x, y);
         return true;
     }
-
+    
     //public async Task<bool> LongMoveStep(IUnit army, FeedbackTasks tasks)
     public bool LongMoveStep(IUnit army)
     {
@@ -895,7 +896,21 @@ public class EmpireTheGame
             return false;
         }
 
-        IUnit unit;
+        var units = LoadStep_PickupAroundMe( transporter );
+
+        int count = 0;
+        foreach (IUnit unit in units)
+        {
+
+            //normal armies hanging around
+            unit.CreateStandingOrder(StandingOrders.LongGoto, transporter.X, transporter.Y);
+            count++;
+            bool full = count + transporter.LoadedUnitsCount >= transporter.Capacity;
+            if (full) break;
+        }
+        /*
+            IUnit }
+unit;
         List<IUnit> unitsTouched = [];
         do
         {
@@ -908,21 +923,36 @@ public class EmpireTheGame
 
         } while ((unit is not null) && 
             (unitsTouched.Count() + transporter.LoadedUnitsCount < transporter.Capacity));
-
+        */
         transporter.StepsAvailable = 0;
 
         return true;
     }
 
-    private IUnit LoadStep_PickupAroundMe(IUnit trans)
+    private IEnumerable<IUnit> LoadStep_PickupAroundMe(IUnit trans)
     {
         //return the unit that was touched, or null if none is found
         bool found = false;
         //var vacuumop = (int dx, int dy) =>
-        Func<int, int, IUnit> vacuumop = (dx, dy) =>
+        Func<int, int, IEnumerable<IUnit>> vacuumop = (dx, dy) =>
         {
-            IUnit? touchedUnit = null;
-            var unit = ActivePlayer.FriendlyUnitAtLoc(trans.X + dx,  trans.Y + dy );
+            //IUnit? touchedUnit = null;
+            //var unit = ActivePlayer.FriendlyUnitAtLoc(trans.X + dx,  trans.Y + dy );
+            var units = ActivePlayer
+                .FriendlyUnitsAtLoc(trans.X + dx, trans.Y + dy)
+                .Where(u => trans.CanPickUp(u))
+                //no stealing from from friendly transporters
+                .Where(u => 
+                {
+                    City? city = ActivePlayer.FindCity(u.X, u.Y);
+                    if (city is not null) return true; //cities are ok to steal from
+                    return !u.IsContained; //otherwise, ignore them if already contained
+                });
+
+            //we will return all the units at this spot, but will not activate standing orders
+
+            /*
+            //this block ignores units in other transporters
             if (trans.CanPickUp(unit))  //handles null armies
             { 
                 //everything is fair game exept units in the container of the same type
@@ -939,25 +969,29 @@ public class EmpireTheGame
                     touchedUnit = unit;
                 }
 
-            }
-            return touchedUnit; //null if nothing found
+            }*/
+            //return touchedUnit; //null if nothing found
+            return units; //empty if nothing found
         };
 
-        var ty = _locsAround.TakeWhile((x) => !found);  //?
-        foreach (var loc in ty)
+        var locs = _locsAround.TakeWhile((x) => !found);  //?
+        /*foreach (var loc in locs)
         {
-            
-            IUnit? unit = vacuumop(loc.x, loc.y);  //send a single army to me
-
+            //IUnit? unit = vacuumop(loc.x, loc.y);  //send a single army to me
+            var units = vacuumop(loc.x, loc.y); //enumerate all eligible units
             //if we return here, standing order picks up just one passanger
-            if (unit is not null) return unit;
-        }
+            //if (unit is not null) return unit;
+        }*/
 
-        return null; 
-
+        var eligibleArmiesAround =
+            locs.SelectMany(loc => vacuumop(loc.x, loc.y));
+        return eligibleArmiesAround;
 
 
     }
+
+
+
 
     //create a Loc[] member and initialize it with some values
 
@@ -965,13 +999,13 @@ public class EmpireTheGame
     private Loc[] _locsAround =
         [
             new() { x=-1, y=-1},
+            new() { x= 0, y=-1},
+            new() { x= 1, y=-1},
             new() { x=-1, y=0},
+            new() { x= 1, y=0},
             new() { x=-1, y=1},
-            new() { x=0, y=-1},
-            new() { x=0, y=1},
-            new() { x=1, y=-1},
-            new() { x=1, y=0},
-            new() { x=1, y=1},
+            new() { x= 0, y=1},
+            new() { x= 1, y=1},
         ];
 
 

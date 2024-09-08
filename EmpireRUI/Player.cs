@@ -696,6 +696,8 @@ public class Player
         }
         return null;
     }
+    public IEnumerable<IUnit> FriendlyUnitsAtLoc(int x, int y) =>
+        units.Where( u=>((u.X == x) && (u.Y == y)));
 
     public IUnit? EnemyUnitAtLoc(int x, int y)
     {
